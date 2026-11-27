@@ -1,6 +1,7 @@
 # KI-Crawler – Technische Projektdokumentation
 
-**Stand:** C.3.11.4b · 27. November 2026  
+**Implementierungsstand:** C.3.11.4b · 27. November 2026  
+**Dokumentationsstand:** 28. November 2026 · Roadmap erweitert um C.3.11.4c–e  
 **Geltungsbereich:** vollständiges `src/` aus `KI_Crawler_src_C3114b.zip`  
 **Ablage:** `README.md` im Repository-Hauptverzeichnis
 
@@ -121,7 +122,8 @@ Weitere Details zu Umgebung, Systemanforderungen und Funktionsprüfung stehen in
 12. [Fehlerbehandlung und Betrieb](#12-fehlerbehandlung-und-betrieb)
 13. [Entwicklungskonventionen und Erweiterung](#13-entwicklungskonventionen-und-erweiterung)
 14. [Aktueller Projektstatus und offene Punkte](#14-aktueller-projektstatus-und-offene-punkte)
-15. [Weitere Entwicklungsroadmap](#15-weitere-entwicklungsroadmap)
+15. [Vollständige Projekthistorie](#15-vollständige-projekthistorie)
+16. [Weitere Entwicklungsroadmap](#16-weitere-entwicklungsroadmap)
 
 ## 1. Ziel und Architektur
 
@@ -531,7 +533,7 @@ Die vorhandene Version 1 verwendet Schema 2. Ihre Parameter sind `federal_state`
 
 Der Schlüssel besteht in Version 1 aus `company_name`, `register_court`, `register_type`, `register_number` in dieser Reihenfolge. Nicht allein nach Firmenname deduplizieren. Die aktuelle Zeilenregel verwendet `tr[data-testid="companyDataRow"]`. Registerinformationen werden teilweise aus einer geprüften vorhergehenden Tabellenzeile extrahiert. CSS-Selektoren und ARIA-Rollen können sich bei Änderungen der Webseite ändern; nicht als allgemein gültige Register-API behandeln.
 
-Schema 3 erweitert den Paginierungsvertrag um `end`. Zulässig sind eine explizite Regel für ein deaktiviertes Vorwärtselement (`next_disabled`) oder einen sichtbaren Endmarker (`visible_marker`), bzw. `null` für unbekannt. Ein fehlender oder versteckter Link allein ist kein Endnachweis. Die Executor-Logik prüft stabile, unterschiedliche Seiten-Signaturen sowie seitenübergreifend eindeutige Schlüssel. Gleichwertige sichtbare Vorwärtslinks werden nur nach Prüfung gleicher Ziel-URL und Zustände zusammengefasst; widersprüchliche Links führen zum Abbruch. Bestehende Schema-2-Dateien werden nicht nachträglich umgeschrieben.
+Schema 3 erweitert den Paginierungsvertrag um `end`. Zulässig sind eine explizite Regel für ein deaktiviertes Vorwärtselement (`next_disabled`) oder einen sichtbaren Endmarker (`visible_marker`), bzw. `null` für unbekannt. Ein fehlender oder versteckter Link allein ist kein Endnachweis. Die Executor-Logik prüft stabile, unterschiedliche Seiten-Signaturen sowie seitenübergreifend eindeutige Schlüssel. Gleichwertige sichtbare Vorwärtslinks werden nur nach Prüfung gleicher Ziel-URL und Zustände zusammengefasst; widersprüchliche Links führen zum Abbruch. Bestehende Schema-2-Dateien werden nicht nachträglich umgeschrieben. Die aktuelle Forderung nach disjunkten Seitenschlüsseln und stabilen Seiten-Hashes zwischen Sitzungen ist für dynamische Ergebnismengen zu streng; C.3.11.4c soll diese Prüfungen differenzieren (siehe Kapitel 16). Der bestehende Schlüssel enthält einen veränderlichen Firmennamen; auch dies ist Gegenstand von C.3.11.4c.
 
 ### 6.3 Manuelle Referenzen (`references/`)
 
@@ -549,7 +551,9 @@ Referenzen sind Eingabedaten, keine automatisch erzeugten Validierungsberichte. 
 - Dokumentenstichproben: `documents/validation/<validation_id>/<crawl_id>/`.
 - Alte Pilotdaten: direkte Dateien in `documents/` und Unterordner wie `hamburg_de/`; bei Migration beibehalten.
 
-Dateien nicht unabhängig vom zugehörigen Bericht/Checkpoint umbenennen, verschieben oder inhaltlich verändern. Historische Berichte können relative oder absolute Pfade enthalten. Eine Verzeichnisumstellung darf nicht blind in historischen JSONs umgeschrieben werden; bei Verlagerung auf einen anderen Host ist die Pfadauflösung gesondert zu prüfen. Der Hash sichert die Zuordnung des exakten Dateiinhalts, nicht automatisch die vollständige fachliche Richtigkeit des Registerdokuments.
+Dateien nicht unabhängig vom zugehörigen Bericht/Checkpoint umbenennen, verschieben oder inhaltlich verändern. Historische Berichte können relative oder absolute Pfade enthalten. Eine Verzeichnisumstellung darf nicht blind in historischen JSONs umgeschrieben werden; bei Verlagerung auf einen anderen Host ist die Pfadauflösung gesondert zu prüfen. Der Hash sichert die Zuordnung des exakten Dateiinhalts, nicht automatisch die vollständige fachliche Richtigkeit des Registerdokuments. Dynamisch erzeugte Dateien können unterschiedliche Byte-Hashes bei identischem fachlichem Inhalt besitzen. Eine logische Dokumentidentität und eine versionierte fachliche Normalisierung sind noch nicht implementiert (C.3.11.4d).
+
+**Aktuelles Größenlimit:** 20 MiB (20.971.520 Bytes), konfigurierbar am Executor-Konstruktor, bislang keine zentrale Ressourcenpolicy für Dateigrößen. Browserdownloads werden erst nach dem Abruf vollständig auf Größe geprüft; bei direkten HTTP-Abrufen wird ein vorhandener `Content-Length` berücksichtigt, aber Playwright kann die Antwort bereits gepuffert haben. Die aktuelle Validierung liest die Datei vollständig ein. Größere Dokumente werden daher im Standardbetrieb abgewiesen; C.3.11.4e soll echtes Streaming, speichereffiziente Prüfung und konfigurierbare Ressourcenbudgets ergänzen. Kein Limit im Produktivcode wurde durch diese Dokumentationsänderung erhöht.
 
 ## 8. Ergebnisverzeichnisse und Datenformate
 
@@ -658,7 +662,7 @@ Auftragsstatus: `running`, `completed`, `failed`, `interrupted`. Ein harter Proz
 
 Der existierende ResumePlanner verlangt einen strukturellen Fehler, passende Quelle und neuere zertifizierte aktive Strategie mit kompatiblem Zeilen-/Container-Fix, dieselben Felder und Dokumentregeln, bekannte Schlüssel und höchstens drei Datensätze auf einer Seite. Er prüft bereits gespeicherte Dateien erneut und lädt nur eindeutig `not_attempted` markierte Dokumente. Unklare/fehlgeschlagene Abrufe, Zugriffsbeschränkungen, Serverfehler und beschädigte Dateien blockieren die Wiederaufnahme. Er führt keine allgemeine mehrseitige Wiederaufnahme durch.
 
-C.3.11.5 soll zukünftig SQLite-Aufträge sicher fortsetzen: Strategie und Scope erneut prüfen, Seitenidentitäten abgleichen, bestätigte Dateien erhalten, unklare Zustände gesondert behandeln. Ein allgemeiner `main_execute_async.py --resume <crawl_id>` ist **noch nicht vorhanden**.
+C.3.11.5 soll zukünftig SQLite-Aufträge sicher fortsetzen: Strategie und Scope erneut prüfen, Seitenidentitäten abgleichen, bestätigte Dateien erhalten, unklare Zustände gesondert behandeln. Ein allgemeiner `main_execute_async.py --resume <crawl_id>` ist **noch nicht vorhanden**. Die ursprüngliche Planung, unveränderte Seitenidentitäten bis zum Wiederaufnahmepunkt vorauszusetzen, wird durch die datensatzorientierte Planung in Kapitel 16 ersetzt. Der aktuelle Code bleibt bis zur Umsetzung unverändert.
 
 ## 10. Kosten und Benchmark
 
@@ -835,7 +839,10 @@ Für eine neue Domain müssen künftig Aufgabenbeschreibung, Allowlist, Start-UR
 | C.3.11.4 – Persistente Checkpoints | Implementiert; lokale SQLite-/Absturztests, keine allgemeine Wiederaufnahme. |
 | C.3.11.4a – Testtrennung | Implementiert, gemeinsame ausführliche Testausgabe. |
 | C.3.11.4b – Pfadverwaltung | Implementiert, konsolidiertes Archiv einschließlich OpenAIClient und Benchmark. |
-| C.3.11.5 – Seitenübergreifende Wiederaufnahme | Geplant. |
+| C.3.11.4c – Dynamische Ergebnismengen und stabile Datensatzidentität | Geplant, nächster Schritt. |
+| C.3.11.4d – Dokumentidentität und Versionierung | Geplant. |
+| C.3.11.4e – Speichereffiziente Dokumentenverarbeitung | Geplant. |
+| C.3.11.5 – Seitenübergreifende Wiederaufnahme | Geplant, aufbauend auf C.3.11.4c–e. |
 | C.3.11.6 – Vollständigkeitsprüfung | Geplant. |
 
 Vor dem Live-Vollbetrieb fehlen weiterhin: explizite und überprüfte Endregel, vollständige unabhängige Paginierungsreferenz, Nachweis späterer Downloads, aktivierte und passende Strategie, tatsächliche Providerfreigabe, SQLite-Wiederaufnahme und abschließende Abdeckungsprüfung. Die vorhandene Suchbegrenzung ist gesondert zu berücksichtigen. Die aktuelle Full-Crawl-Preflight-Implementierung verlangt eine Referenz mit bestätigtem Endzustand; der vorhandene Validator beschränkt sich auf zwei bis drei Seiten. Das ist für den aktuellen größeren Suchumfang eine offene Validierungslücke.
@@ -844,17 +851,153 @@ Technische Altlasten: Drei ältere Tests benötigen explizite Fixture-Argumente;
 
 ### Quellenbasis und Dokumentationsumfang
 
-Grundlage ist ausschließlich das konsolidierte Archiv `KI_Crawler_src_C3114b.zip`: 48 Python-Dateien, vorhandene JSON-/CSV-/Originaldateien, Manifest, Strategie und Referenzen sowie `README_C3114b.md` und `README_SRC_C3114b.md`. Die entpackten Dateien wurden mit dem Archivinhalt abgeglichen. Die CLI-Referenz ist aus den `argparse`-Definitionen und Implementierungen abgeleitet. Die Beispiele sind teilweise zustandsändernd und ausdrücklich als bedingte Aufrufe gekennzeichnet; für diese Dokumentation wurden keine Live-Crawls, API-Aufrufe oder neuen Tests ausgeführt. Der Repository-Root ist nicht im ursprünglichen Archiv enthalten. Die Projektkonfiguration `pyproject.toml` dient als Grundlage der Installationsanleitung. `uv.lock` ist Bestandteil des Git-Repositorys und wird gemeinsam mit `pyproject.toml` versioniert. Die alternative `requirements.txt` wird künftig aus der Lockdatei exportiert. Die Installation der aufgeführten Paketversionen wurde für diese Dokumentationsänderung nicht ausgeführt. Das Handbuch verändert weder Quellcode noch vorhandene Betriebsdaten.
+Grundlage der Beschreibung des implementierten Codes ist das konsolidierte Archiv `KI_Crawler_src_C3114b.zip`: 48 Python-Dateien, vorhandene JSON-/CSV-/Originaldateien, Manifest, Strategie und Referenzen sowie `README_C3114b.md` und `README_SRC_C3114b.md`. Die entpackten Dateien wurden mit dem Archivinhalt abgeglichen. Die CLI-Referenz ist aus den `argparse`-Definitionen und Implementierungen abgeleitet. Die Beispiele sind teilweise zustandsändernd und ausdrücklich als bedingte Aufrufe gekennzeichnet; für diese Dokumentation wurden keine Live-Crawls, API-Aufrufe oder neuen Tests ausgeführt. Der Repository-Root ist nicht im ursprünglichen Archiv enthalten. Die Projektkonfiguration `pyproject.toml` dient als Grundlage der Installationsanleitung. `uv.lock` ist Bestandteil des Git-Repositorys und wird gemeinsam mit `pyproject.toml` versioniert. Die alternative `requirements.txt` wird künftig aus der Lockdatei exportiert. Die Installation der aufgeführten Paketversionen wurde für diese Dokumentationsänderung nicht ausgeführt. Das Handbuch verändert weder Quellcode noch vorhandene Betriebsdaten.
 
-## 15. Weitere Entwicklungsroadmap
+## 15. Vollständige Projekthistorie
 
-Die folgende Roadmap ergänzt den dokumentierten Implementierungsstand C.3.11.4b um die weitere Entwicklung des KI-Crawlers. Die Phasen C.3.11.5, C.3.11.6 und die übergeordneten Themen C.4 bis C.7 stammen aus der bisherigen Projektplanung. Die detaillierten Arbeitspakete und Abnahmekriterien in diesem Kapitel sind **Planungsvorschläge**, noch keine abschließend vereinbarte Untergliederung oder implementierte Funktion. Termine und konkrete AWS-Dienste werden erst in den jeweiligen Phasen festgelegt.
+Dieses Kapitel ist das fortlaufende Entwicklungsprotokoll seit Projektbeginn. Es dokumentiert die tatsächlich verfolgten Phasen, die Gründe für Architekturänderungen, nachgewiesene Ergebnisse und noch offene Punkte. Historische Nummerierungen werden beibehalten; eine implementierte Komponente ist nicht automatisch für den Live-Vollbetrieb freigegeben. Die Zahlen sind historische Messwerte bzw. berichtete Testresultate, keine neu ausgeführten Tests und keine Produktions-SLA.
 
-### 15.1 Übersicht und Abhängigkeiten
+### 15.1 Projektstart und ursprüngliche Planung (26. November 2026)
+
+Ausgangspunkt war ein KI-Crawler, der über eine API konkrete Crawling-Aufträge erhält, strukturierte Daten aus öffentlich zugänglichen Webseiten liefert und zugehörige Originaldokumente beschafft. Der lokale Pilot sollte die technische und wirtschaftliche Grundlage für einen späteren AWS-Crawler schaffen. Die Abrechnung der API-Nutzung muss getrennt vom ChatGPT-Abonnement betrachtet und für jeden Auftrag nachvollziehbar sein.
+
+In einem frühen Architekturentwurf wurden API-POC, Single-Page-Extraktion, agentisches Crawling, Dokumentenabruf, Benchmarking und AWS als sechs grobe Phasen A–F zusammengefasst. Im anschließend tatsächlich verfolgten Entwicklungsplan wurde diese Gliederung zu A–H verfeinert. Die folgende Tabelle verwendet diese zweite, operative Nummerierung, um gleichnamige Phasen nicht zu verwechseln.
+
+| Phase | Ursprüngliches Ziel | Erreicht / heutige Zuordnung |
+|---|---|---|
+| A | API-Anbindung und Verbindungstest | Erfolgreich durch den Nutzer bestätigt; OpenAI Responses API als Grundlage. |
+| B | Token- und Kosten-Tracking | Implementiert; schlankes CSV-Logging statt separater komplexer Tracking-/Pricing-Architektur. |
+| C | KI-gesteuerte Seitennavigation | Web Search, Browser-Automatisierung und später adaptive, wiederverwendbare Strategien (C.1–C.3); Generalisierung folgt in C.4. |
+| D | Strukturierte Datenextraktion | Erste Extraktionstests erfolgreich; heute Schema, deterministische Feldregeln und Validierung. Generische fachliche Qualität über mehrere Domains noch offen. |
+| E | Dokumentensuche und Download | E.1 direkter Download, E.2 sitzungsgebundener Browserdownload; vollständige Live-Abdeckung und größere Dateien noch offen. |
+| F | Qualitätsprüfung und Halluzinationskontrolle | Teilweise in C.3.2, C.3.7–9 und C.3.11 umgesetzt; fachliche Abdeckung, adaptive End-to-End-Tests und weitere Domains noch offen. |
+| G | Modellvergleich und Kostenbenchmark | Historischer API-/Laufzeitbenchmark C.3.10 implementiert; systematischer Modellvergleich und umfassende Qualitäts-/Kostenoptimierung noch offen. |
+| H | AWS-Integration | Weiterhin geplant; heute C.5–C.7 (Persistenz, Cloud und Gesamtkosten). |
+
+### 15.2 Frühe Pilotversuche – A, B, C.1, D, E.1 (26.–27. November 2026)
+
+| Schritt | Implementierung, Erkenntnis und Ergebnis | Verbleibende Grenze |
+|---|---|---|
+| A – API Proof of Concept | Erste API-Anbindung und erfolgreiche Anfragen; Verbindungstest vom Nutzer bestätigt. | Kein vollständiger Crawl oder Cloud-Betrieb. |
+| B – Nutzungs-/Kostenlogging | Erstes Paket mit `UsageTracker.py`, `pricing.json`, `OpenAIClient.py` und Tests. Auf Nutzerwunsch vereinfacht: CSV pro API-Aufruf, später Cached Input und Suchkosten separat. Heute in `OpenAIClient.py`. | Historische Logformate unterscheiden sich; mindestens ein Kostenwert unvollständig. |
+| C.1 – Web Search | KI recherchiert öffentlich zugängliche Seiten und Dokumentlinks. Reale Suchanfragen und Linkfindung erprobt. | Interaktive Registersuche konnte mit Web Search keine Unternehmen extrahieren. |
+| D – Strukturierte Extraktion | Strukturierte Antworten/JSON und Extraktion gefundener Daten; ältere Ergebnisse heute unter `results/executions/legacy/`. | Kein Beleg einer allgemeinen fehlerfreien Extraktion beliebiger Webseiten. |
+| E.1 – Statische Dokumente | Direkte HTTP-Downloads und Download-Protokollierung. Erster Test: 4 von 10 Downloads erfolgreich, sechs `ConnectionResetError`. `DocumentDownloader.py`, CSV-Queue und Retry/Backoff ausgebaut. | Der heutige Legacy-Downloader hat eine offene `file_type`-Inkonsistenz; kein Ersatz für den modernen Executor. Kein Nachweis, dass alle damaligen Fehler abschließend beseitigt wurden. |
+
+Die Entscheidung für eine einfache CSV statt umfangreicher Abstraktionen war bewusst: zunächst tatsächliche Kosten und technische Machbarkeit messen. Die frühen Web-Search-/Download-Experimente zeigten, dass Linkfindung allein nicht genügt, wenn ein Anbieter dynamische Sitzungen und interaktive Suchmasken verwendet.
+
+### 15.3 C.2 und E.2 – Browserbasierter Pilot und sitzungsgebundene Dokumente (27. November 2026)
+
+`BrowserUse.py` und `main_browser.py` verbanden lokale Playwright-Browsersteuerung mit den Funktionsaufrufen des OpenAI-Modells. Der Agent konnte DOM-Zustände untersuchen, Formularfelder und Filter bedienen und im Browser erzeugte Dokumente übernehmen. Für das Unternehmensregister wurden Hamburg, Amtsgericht Hamburg und HRB als konkrete Pilotparameter gewählt. Ein chronologischer Abdruck (CD/PDF) und ein strukturierter Registerinhalt (SI/XML) konnten in einem begrenzten Browserlauf beschafft werden.
+
+Damit war die grundsätzliche Machbarkeit für interaktive Registerinformationen nachgewiesen. Der Ansatz hatte jedoch einen entscheidenden Nachteil: bei jedem einzelnen Navigationsschritt erneut eine KI anzufragen verursachte Zeit- und API-Kosten, obwohl sich die meisten Arbeitsschritte wiederholen. Daraus entstand C.3: KI nur für die Entdeckung bzw. begrenzte Reparatur der Strategie verwenden und bekannte Aufträge deterministisch ausführen.
+
+### 15.4 C.3.1–C.3.5 – Von der Baseline zur deterministischen Strategie
+
+| Phase | Implementierung und Ergebnis | Status / offene Grenze |
+|---|---|---|
+| C.3.1 – Baseline und Messinstrumentierung | `BrowserUse.measure`/Timing-CSV; ein agentischer Referenzlauf mit einem Unternehmen und zwei Dokumenten. 63,589 s Gesamtlaufzeit, 17 LLM-Aufrufe, 45,149 s LLM-Zeit. | Live-Pilot nachgewiesen; kein allgemeiner Durchsatztest. |
+| C.3.2 – StrategySchema | JSON-Schema für Parameter, Navigation, Selektoren, Extraktion, Schlüssel, Dokumente und Paginierung; lokale Schema-Prüfung. | Implementiert; Schema später erweitert (v2/v3). |
+| C.3.3 – KI-gestützte Strategy Discovery | `main_discovery.py`, `BrowserUse.py`; wiederverwendbare Regeln statt einmaliger Ergebnisse. Mehrere Discovery-Läufe v1/v2/v2.1; dynamische Locator-Namen, geprüfte Geschwisterzeilen und Regex für Registerdaten. | Strategie für Unternehmensregister gewonnen; endgültige Seite noch nicht live geprüft. |
+| C.3.4 – Versionierter StrategyStore | Lokale Versionen, Manifest, Hashes, Locks, atomare Schreibvorgänge, Kandidaten und Aktivierung. Import vorhandener Strategie ohne API-Aufruf. | Implementiert; später um gebundene Zertifikate ergänzt. |
+| C.3.5 – Synchroner deterministischer Executor | `StrategyExecutor.py`, `main_execute.py`; Parameter-, Domain-, Feld- und Dokumentenprüfung, Cookie-/Menübehandlung und seitenbezogene Extraktion. | Live: Metadaten eines Unternehmens in 3,880 s; ein Unternehmen inkl. 2/2 Dokumenten in 8,472 s, jeweils 0 LLM-Aufrufe. Historische synchrone CLI ist nicht der bevorzugte Freigabepfad. |
+
+Der direkte Vergleich der beiden Ein-Unternehmen-/Zwei-Dokumente-Läufe (63,589 s agentisch gegenüber 8,472 s deterministisch) ergibt rund Faktor 7,51 bzw. 86,7 % weniger Laufzeit. Dies ist ein Vergleich zweier konkreter Läufe, kein allgemeiner statistischer Geschwindigkeitsnachweis. Die einmaligen Discovery-/Validierungskosten sind gesondert zu betrachten.
+
+### 15.5 C.3.6–C.3.9 – Asynchronität, Fehlerklassifikation und adaptive Strategiepflege
+
+| Phase | Implementierung und Ergebnis | Status / offene Grenze |
+|---|---|---|
+| C.3.6 – Asynchroner Worker-Pool | `AsyncStrategyExecutor.py`; asyncio-Queue, getrennte Tabs bei mehreren Workern, Identitätsprüfung, kontrollierter Abbruch und Netzwerkdiagnostik. | Sequenzieller Live-Test: 3 Unternehmen, 6/6 Dokumente, 17,470 s, 0 LLM-Aufrufe. Parallelbetrieb des Unternehmensregisters nicht zuverlässig. |
+| C.3.7 – Fehlerklassifizierung | `ErrorClassifier.py`; lokale Klassifikation von Zugriff, Server-/Netzwerk-, Download-, Validierungs-, Interaktions- und möglichen Strukturfehlern. | Live-Fehler HTTP 500 als `SERVER_ERROR` klassifiziert, keine KI-Reparatur/automatische Wiederholung. |
+| C.3.8 – Recovery und kontrollierte Strategiereparatur | `RecoveryManager`, `StructureVerifier`, `StrategyRepair`, `ExecutionPolicy`; nur nachgewiesene Strukturänderungen, geprüfte Locator-Alternativen, maximal ein KI-Reparaturversuch je Quellversion; neue Kandidaten. | Lokal mit Mocks und synthetischen Seiten getestet; kein realer adaptiver Reparatur-End-to-End-Nachweis. |
+| C.3.9 – Strategievalidierung und Versionierung | `StrategyValidator`, `ResumePlanner`, `main_strategy`; unabhängige Referenz, getrennte Sitzungen, Dokumentstichprobe, hash-gebundenes Zertifikat, Aktivierung und Rollback mit Zustandsprüfung. | Im konsolidierten Store ist Version 1 validiert, nicht aktiviert. Wiederaufnahme nur für begrenzten bekannten einseitigen Scope, nicht für SQLite-Vollaufträge. |
+| C.3.9.1–C.3.9.3 – Erweiterte adaptive Tests | Simulator, automatisierte Fehlerszenarien und vollständiger adaptiver End-to-End-Test vorgeschlagen. | Bewusst zurückgestellt vor C.3.10; weiterhin offen. |
+
+**Entscheidung zur Parallelität:** Drei dokumentierte Live-Versuche mit zwei Workern lieferten 4/6, 4/6 und 1/6 Dokumenten (0 von 3 vollständig erfolgreich). Beim letzten Versuch wurde eine HTTP-500-Fehlerseite festgestellt, während ein bereits gestarteter Download des anderen Workers noch fertig wurde. Die Ursache der Serverfehler ist nicht abschließend nachgewiesen; eine Parallelitätsbeschränkung des Anbieters wird nicht als bewiesene Ursache behauptet. Die Domain-Policy bleibt deshalb bei einem Worker. Weitere parallele Live-Tests sind nicht vorgesehen, solange keine neuen belastbaren Voraussetzungen vorliegen.
+
+### 15.6 C.3.10 – Benchmarking und Kostenanalyse
+
+`BenchmarkAnalyzer.py`, `main_benchmark.py` und `test_benchmark.py` ermöglichen eine Offline-Auswertung von Execution-, Discovery-, Recovery- und Validierungsberichten sowie Timing- und Usage-Logs. Die Baseline wird über eine dokumentierte Crawl-ID zugeordnet; unbekannte Kosten werden nicht als kostenlos behandelt. Spätere Verbesserungen unterstützen historische CSV-Zeilenformate und vermeiden Doppelzählungen.
+
+| Historische Messung | Wert |
+|---|---:|
+| Agentische Baseline (1 Unternehmen, 2 Dokumente) | 63,589 s / 17 LLM-Aufrufe |
+| Synchroner Crawl (1 Unternehmen, 2 Dokumente) | 8,472 s / 0 LLM-Aufrufe |
+| Asynchroner sequenzieller Crawl (3 Unternehmen, 6 Dokumente) | 17,470 s / 0 LLM-Aufrufe |
+| API-Nutzungsdatensätze im später konsolidierten Bestand | 138 |
+| Input / Cached Input / Output-Tokens | 4.585.406 / 3.641.750 / 53.839 |
+| Gesamt-Tokens | 4.639.245 |
+| Web-Suchanfragen | 21 |
+| Bekannte protokollierte API-Kosten | 0,25848560 USD |
+
+Der konsolidierte Benchmark C.3.11.4b enthält 22 Runs. Der historische Kostenwert ist unvollständig und umfasst keine AWS-/Infrastrukturkosten. Ein systematischer Modellvergleich bleibt offen. Die ursprünglichen Logs werden nicht nachträglich verändert.
+
+### 15.7 C.3.11.1 und C.3.11.2 – Mehrseitige Ergebnisse und Paginierungsvalidierung
+
+Nach erfolgreichen begrenzten Downloads wurde die Anforderung erweitert: Der Crawler soll grundsätzlich alle zum Auftrag gehörenden angezeigten Seiten und Dokumente verarbeiten können, nicht nur eine manuell vorgegebene Stichprobe.
+
+| Schritt | Erreicht | Nachweis / Grenze |
+|---|---|---|
+| C.3.11.1 – Schema und Endbedingungen | Schema v3 mit explizitem Endmarker oder deaktiviertem Vorwärtslink; unbestätigtes Ende von bestätigtem Ende getrennt; Prüfung von Seitenwechsel und Schlüsseln. | Lokal getestet; gespeicherte Live-Strategie bleibt Schema 2 ohne Endregel. |
+| C.3.11.2 v1 – Mehrseitenvalidator | Zwei unabhängige Sitzungen, Referenzdatensätze, vollständige Seitenproben, Prüfung von Download-Steuerelementen und optionalem späterem Download. | Begrenzung auf 2–3 aufeinanderfolgende Seiten; unabhängige Referenz muss vollständig sein. |
+| C.3.11.2 v2 – Technischer Modus | `--technical-only`, `--pages`; technische Prüfung ohne manuell ausgefüllte fachliche Referenz. | Erster Live-Versuch scheitert an blockiertem HRB-Klick; 0 Unternehmen. |
+| C.3.11.2 v3 – Menüinteraktion | Bundesländer-Menü nach Auswahl schließen und Zustand verifizieren; keine erzwungenen Klicks. | Live: 30 Unternehmen, 60 geprüfte Dokumenten-Controls auf Seite 1; Weiter-Link mehrdeutig. |
+| C.3.11.2 v4 – Gleichwertige Paginierungslinks | Nur nachweislich gleichwertige sichtbare Links mit identischem Ziel und Zustand zusammenfassen. | Live: zwei unabhängige Sitzungen mit je 2 Seiten, 60 eindeutigen Unternehmen und 120 geprüften Controls; identische stabile Seiten-Hashes, 0 Downloads und 0 LLM-Aufrufe. |
+
+Der erfolgreiche Report `ed551293-0bfd-4583-9238-35876704b810_pagination_validation.json` dokumentiert 8,319 s bzw. 9,337 s pro Sitzung, insgesamt 17,668 s. Die technische Prüfung ist bestanden, der Gesamtstatus bleibt `partial`: kein terminaler Endzustand, keine vollständige unabhängige Paginierungsreferenz, keine Downloads auf späterer Seite, keine Full-Crawl-Freigabe. Die beobachtete Suche zeigt 34 Seiten und einen expliziten Hinweis auf maximal 1.000 Treffer; die letzten Seiten wurden nicht dadurch bereits verifiziert.
+
+Die damalige Übereinstimmung der Seiten-Hashes ist ein positiver Messbefund für diese beiden Sitzungen. Sie ist kein Nachweis einer dauerhaft unveränderlichen Ergebnismenge. Dieser Unterschied motiviert C.3.11.4c.
+
+### 15.8 C.3.11.3 – Vollständiger Crawl-Modus und Download-Stabilisierung
+
+`FullCrawl.py` und die erweiterte asynchrone CLI führen `--all-results`, `--plan-only`, ganze Seiten als Verarbeitungseinheit, Sicherheitsobergrenzen und einen konfigurierbaren Anbieter-Begrenzungshinweis ein. Der Planmodus prüft die Freigabevoraussetzungen ohne Browserstart. Die Verarbeitung aller angezeigten Seiten ist nicht gleichbedeutend mit fachlicher Vollständigkeit; `completeness_verified` bleibt bis zur abschließenden Prüfung `false`.
+
+| Version | Anlass und Änderung | Ergebnis |
+|---|---|---|
+| C.3.11.3 v1 | Vollständigen Crawl und Preflight implementiert. | Lokal 3 Seiten, 7 Unternehmen, 14/14 Dokumente; beim Nutzer sporadischer Download-Timeout. |
+| C.3.11.3 v2 | Test-Timeout von 4 auf 15 s erhöht, DOM-Download-Link/MIME-Typ und Fehlerdiagnose verbessert; Negativtest ergänzt. | Lokal erfolgreich; beim Nutzer weiterhin Ausfall beim 11. Download nach 10 erfolgreichen Abrufen. |
+| C.3.11.3 v3 | Aufgrund dokumentierter Chromium-Download-Burst-Begrenzung 250 ms Mindestabstand pro Worker nach abgeschlossenem Download, Timing `download_pacing`. | 12/12 lokale Tests einschließlich aller 14 Downloads berichtet; Nutzer bestätigt erfolgreichen Testlauf. |
+
+Chromium-Ratenbegrenzung ist eine durch Fehlerbild und Quellcode gestützte Erklärung, kein direkt instrumentierter Nachweis im konkreten Browserprozess. Die erfolgreiche Korrektur bleibt im produktiven asynchronen Executor. Anbieterspezifische Limits werden dadurch nicht ersetzt. Der vollständige Live-Crawl bleibt gesperrt.
+
+### 15.9 C.3.11.4–C.3.11.4b – Persistenz, Tests und Konsolidierung
+
+| Phase / Teilaufgabe | Erreichte Funktionen und Entscheidungen | Nachweis / offene Grenze |
+|---|---|---|
+| C.3.11.4 – SQLite-Checkpoints | Eine DB je Auftrag; Commit vor Download, endgültiger Status nach Datei-/Hashprüfung, Fortschritt je Seite und Dokument; Read-only-Inspector. | 21/21 Tests berichtet, einschließlich hartem Prozessabbruch und Speicherausfall vor dem Download. Kein Stromausfalltest, keine mehrseitige Resume-Funktion. |
+| Gemeinsamer TestRunner | Testnamen und Ergebnisse während der Ausführung; explizite OK/NICHT-OK-Anzahl, Tracebacks und zentrale Test-CLI. | Runner-, SQLite- und ein Browser-Test: 13/13 berichtet. |
+| C.3.11.4a – Testtrennung | Alle `test_*.py`, `TestRunner.py`, `main_tests.py` nach `src/tests/`; Produktivcode `src/crawler/`, direkte Imports, Working Directory `src`. | Testprozess-Importpfade und separater Absturzprozess angepasst; 13/13 ausgewählte Tests berichtet. Drei alte Module benötigen weiterhin Fixture-Argumente. |
+| C.3.11.4b – Pfadverwaltung | `ProjectPaths.py`, strukturierte Results-Ordner, separate Originaldokumente, Strategien und Referenzen; Dry-Run-Migration und Benchmark-Kompatibilität. | 36/36 ausgewählte Tests im ersten Änderungspaket berichtet; anschließend Konsolidierung mit tatsächlichem `src.zip`. |
+| C.3.11.4b – Konsolidiertes src | Aktueller OpenAIClient und alter Downloader an zentrale Pfade angepasst; Legacy-Reports separat, Queue unter Checkpoints, Benchmark neu berechnet. | 95 ursprüngliche Datendateien per SHA-256 unverändert, darunter 50 Originaldokumente; 22 Benchmark-Runs und 138 API-Nutzungsdatensätze vor/nach Migration gleich. 60/60 ausgewählte Tests und Syntaxprüfung aller 48 Python-Dateien berichtet. |
+| Dokumentation und Installation | Technisches Handbuch, Roadmap, Installationsanleitung aus `pyproject.toml`, alternative `requirements.txt`; `uv.lock` wird im Repo versioniert, README im Root. | Dokumentiert; Neuinstallation und vollständige historische Regression nicht erneut durchgeführt. |
+
+### 15.10 Neue Erkenntnisse vor der Wiederaufnahme (28. November 2026)
+
+Die bisherige Implementierung verwendet seitenbezogene Signaturen, eindeutige Schlüssel mit Firmennamen, binäre Dokument-Hashes und ein Standard-Dateigrößenlimit von 20 MiB. Diese Mechanismen haben den bisherigen Pilot abgesichert, genügen aber nicht als dauerhafte Grundlage für dynamische Datenbestände. Drei neue Arbeitspakete wurden deshalb vor C.3.11.5 aufgenommen:
+
+| Phase | Anlass | Status |
+|---|---|---|
+| C.3.11.4c | Treffer können zwischen Seiten wandern, neu entstehen, verschwinden oder umbenannt werden; technische Validierung darf nicht grundsätzlich identische Seiteninhalte verlangen. | Geplant, nächster Entwicklungsschritt. |
+| C.3.11.4d | Dynamisch erzeugte Originaldokumente können trotz identischen fachlichen Inhalts unterschiedliche Bytes/Metadaten besitzen. | Geplant; logische Identität und fachliche Versionierung getrennt von binärer Integrität. |
+| C.3.11.4e | 20 MiB Standardlimit und vollständig eingelesene Dateien begrenzen größere Abrufe und erhöhen den Speicherbedarf. | Geplant; Streaming, Validatoren und konfigurierbare Budgets. |
+
+Alle folgenden Phasen bleiben offen. Insbesondere ist weder der SQLite-Resume noch ein vollständiger fachlicher Abschlussnachweis oder eine vollständige Live-Freigabe implementiert. Die neue Planung verändert keine bestehenden Strategien, Checkpoints, Originaldokumente oder Ergebnisse.
+
+**Quellen und Genauigkeit der Historie:** Die frühen Phasen sind aus dem bisherigen Projektverlauf, den erhaltenen Pilotpaketen `KI_Crawler_Phase_B.zip`/`KI_Crawler_Phase_E_Retry.zip` und dem konsolidierten Code rekonstruiert. Die späteren Schritte stützen sich auf die Entwicklungsberichte, vorhandenen C.3.x-README-Dateien, Execution-/Validierungsberichte und historischen Benchmarks. Die Projektchronologie ist auf Ebene der vereinbarten Phasen und relevanten Korrekturversionen dokumentiert; nicht jeder einzelne Zwischenversuch ist als vollständiges Log erhalten. Testzahlen sind nicht additiv, da spätere Regressionen frühere Tests erneut ausführen. Wo kein eigenständiger Nachweis vorliegt, wird kein erfolgreicher Test behauptet.
+
+## 16. Weitere Entwicklungsroadmap
+
+Die folgende Roadmap schließt an die Projekthistorie in Kapitel 15 an und ergänzt den dokumentierten Implementierungsstand C.3.11.4b um die weitere Entwicklung des KI-Crawlers. Die Phasen C.3.11.5, C.3.11.6 und die übergeordneten Themen C.4 bis C.7 stammen aus der bisherigen Projektplanung. Die neu vereinbarten Themen C.3.11.4c–e werden vor der Wiederaufnahme umgesetzt, damit diese auf stabileren Identitäten und einer belastbaren Dokumentenverarbeitung aufbaut. Die detaillierten Arbeitspakete und Abnahmekriterien in diesem Kapitel sind **Planungsvorschläge**, noch keine abschließend vereinbarte Untergliederung oder implementierte Funktion. Termine und konkrete AWS-Dienste werden erst in den jeweiligen Phasen festgelegt.
+
+### 16.1 Übersicht und Abhängigkeiten
 
 | Phase | Thema | Stand / Ziel |
 |---|---|---|
-| C.3.11.5 | Seitenübergreifende Wiederaufnahme | Nächster Entwicklungsschritt: sichere Fortsetzung aus SQLite-Checkpoints. |
+| C.3.11.4c | Dynamische Ergebnismengen und stabile Datensatzidentität | Nächster Entwicklungsschritt: Validierung von Struktur und Inhalt trennen. |
+| C.3.11.4d | Dokumentidentität und Versionierung | Logische Identität, binäre Integrität und fachliche Identität unterscheiden. |
+| C.3.11.4e | Speichereffiziente Dokumentenverarbeitung | Streaming, konfigurierbare Größen- und Ressourcenlimits. |
+| C.3.11.5 | Seitenübergreifende Wiederaufnahme | Sichere datensatzorientierte Fortsetzung aus SQLite-Checkpoints. |
 | C.3.11.6 | Vollständigkeitsprüfung und Abschlussbericht | Abdeckung, Dokumentenstatus und Abschlussnachweise zusammenführen. |
 | C.3.9.1–C.3.9.3 | Erweiterte Tests der adaptiven Strategieanpassung | Bewusst zurückgestellt; vor einem freigegebenen autonomen Reparaturbetrieb erneut bewerten. |
 | C.4 | Generalisierung auf unterschiedliche Zielwebseiten | Domain- und aufgabenspezifische Konfiguration vom generischen Crawler trennen. |
@@ -864,7 +1007,10 @@ Die folgende Roadmap ergänzt den dokumentierten Implementierungsstand C.3.11.4b
 
 ```mermaid
 flowchart TD
-    A[C.3.11.4b: Konsolidierter lokaler Stand] --> B[C.3.11.5: Wiederaufnahme]
+    A[C.3.11.4b: Konsolidierter lokaler Stand] --> I[C.3.11.4c: Dynamische Ergebnismengen]
+    I --> J[C.3.11.4d: Dokumentidentität]
+    J --> K[C.3.11.4e: Streaming und Ressourcenlimits]
+    K --> B[C.3.11.5: Wiederaufnahme]
     B --> C[C.3.11.6: Vollständigkeit]
     C --> D[C.4: Generalisierung]
     D --> E[C.5: Auftragsverwaltung]
@@ -875,7 +1021,83 @@ flowchart TD
 
 Die Reihenfolge beschreibt die geplante technische Entwicklung, nicht die Freigabe eines vollständigen Live-Crawls. Kosten- und Laufzeitmessung laufen bereits heute und werden in allen weiteren Phasen fortgeführt. Die Tests des adaptiven Systems besitzen noch keinen festgelegten neuen Umsetzungstermin.
 
-### 15.2 C.3.11.5 – Seitenübergreifende Wiederaufnahme
+### 16.2 C.3.11.4c – Dynamische Ergebnismengen und stabile Datensatzidentität
+
+**Ziel:** Struktur-, Paginierungs- und fachliche Validierung voneinander trennen und die Auftragsverarbeitung von veränderlichen Seitenpositionen entkoppeln.
+
+Beispiel: Seite 1 enthält zunächst A, B, C; Seite 2 D, E, F. Nach Einfügen von X am Anfang enthält Seite 1 X, A, B und Seite 2 C, D, E. Eine Fortsetzung auf Seite 2 würde C erneut sehen und X verpassen. Bei Löschungen können noch nicht verarbeitete Treffer in bereits besuchte Seiten rutschen. Auch während eines ununterbrochenen Crawls kann sich die Menge verändern.
+
+| Prüfart | Geplanter Nachweis |
+|---|---|
+| Struktur | Selektoren, Pflichtfelder, Navigation und Dokumenten-Steuerelemente funktionieren. |
+| Paginierung | Tatsächlicher Fortschritt und gültiger Seitenwechsel; kein bloßes erneutes Anzeigen derselben Seite oder eine Schleife. |
+| Fachliche Referenz | Attribute eines eindeutig identifizierten Datensatzes stimmen mit einer unabhängigen, zeitlich passenden Referenz überein; Position ist kein Schlüssel. |
+| Snapshot | Nur bei ausdrücklich erwartetem, nachweislich stabilem Datenstand identische Mengen/Reihenfolgen vergleichen. |
+| Abdeckung | Nachweisen, welche Identitäten innerhalb des Beobachtungszeitraums erfasst wurden; keine Vollständigkeitsgarantie ohne ausreichende Grundlage. |
+
+Vorgesehene Arbeitspakete:
+
+- Strategieabhängige, stabile Identität definieren, bevorzugt eine belastbare Anbieter-ID. Für das Unternehmensregister ist `register_court`, `register_type`, `register_number` ein Kandidat innerhalb des jeweiligen Registerbestandes; `company_name` wird zum veränderlichen Attribut. Wenn verfügbar, stabilen Gerichtscode bzw. fachlich definierte Normalisierung prüfen. Registerwechsel können auch diesen Schlüssel ändern; keine unbelegte Zusammenführung verschiedener Registereinträge.
+- Identitätsvertrag versionieren. Bestehende Schema-2-/Schema-3-Strategien, Checkpoints und Zertifikate nicht umschreiben; bei einer Schlüsseländerung eine neue Strategieversion und explizite Kompatibilitäts-/Migrationsprüfung vorsehen. Neue Schlüssel auf Kollisionen und fehlende Werte prüfen; Mehrdeutigkeit nicht durch Raten auflösen.
+- `PaginationValidator`, synchrone/asynchrone Navigation, `FullCrawl`, `CrawlCheckpoint` und Referenzvergleich auf die Annahmen unveränderlicher Seiten prüfen. Technische Sitzungen einzeln validieren; unterschiedliche Datenstände als Drift erfassen, nicht automatisch als Strukturfehler klassifizieren. Bei unabhängigen Referenzen Zeitbezug, veränderte Attribute und nicht mehr auffindbare Fälle getrennt ausweisen.
+- Seiten-Hashes als kurzzeitigen Navigations-/Beobachtungsnachweis erhalten; bei vorhandenen Snapshot- oder Cursor-Verträgen stärker nutzen. Nicht pauschal auf disjunkte Schlüssel zwischen allen Seiten bestehen: dieselbe verifizierte Identität darf wieder beobachtet werden, ohne erneut einen Download zu starten. Widersprüchliche Identität, unerklärte Wiederholung einer Seite und Schleifen weiterhin erkennen und begrenzt stoppen.
+- Seitenbesuche und Datensatzsichtungen getrennt von eindeutigen Entitäten speichern. Beobachtungszeit, Seite, Lauf-/Sitzungs-ID, stabile Schlüssel und Attributänderungen nachvollziehbar erfassen. Ein nicht erneut gefundener Datensatz ist zunächst „nicht beobachtet“, nicht automatisch gelöscht.
+- Untersuchen, ob der Anbieter eine stabile Sortierung, Snapshot- oder Cursor-Semantik dokumentiert und zulässt. Ohne diese Semantik bleibt Vollständigkeit bei einem beweglichen Datenbestand grundsätzlich eingeschränkt; keine Umgehung anbieterseitiger Limits.
+- Synthetische Tests: Einfügen, Löschen, Verschieben, Umbenennen, Umordnen, gültige Seitenüberlappung, echte Schlüsselkonflikte, fehlender Fortschritt, zyklische Paginierung und veraltete Referenz. Keine zusätzlichen LLM-Anfragen allein wegen Datenänderungen.
+
+**Abnahmevorschlag:** Ein technisch intakter Crawl mit geänderten Seiteninhalten wird nicht als Strukturfehler verworfen. Datensatzidentitäten bleiben unabhängig von Seitennummer und Firmenname nachvollziehbar; Kollisionen und unsichere Navigation führen weiterhin zu einem kontrollierten Stopp. Ein neuer Schlüsselvertrag ist versioniert und historische Daten bleiben unverändert. Die fachliche Vollständigkeit wird nicht aus einem bloßen Seiten-Hash abgeleitet.
+
+### 16.3 C.3.11.4d – Dokumentidentität und Versionierung
+
+**Ziel:** Vermeiden, dass binär unterschiedliche, fachlich gleiche Dateien als neue fachliche Versionen gelten oder dass verschiedene fachliche Dokumente fälschlich zusammengeführt werden. Originaldateien unverändert erhalten.
+
+| Identitätsebene | Geplante Bedeutung |
+|---|---|
+| Logisch | Quelle, stabiler Datensatzschlüssel, Dokumententyp und gegebenenfalls Anbieter-Dokument-ID/Version; ermöglicht Auftrags-Deduplizierung vor dem Download. |
+| Binär | SHA-256 über Originalbytes, Größe und Dateityp; Integrität, exakte Dateiduplikate und Wiederaufnahme. |
+| Fachlich | Versionierter, dokumenttypspezifisch normalisierter Inhalt; kann semantisch gleiche Versionen erkennen, sofern validierte Normalisierung verfügbar ist. |
+
+Ein CD-Registerabdruck kann zu verschiedenen Abrufzeitpunkten denselben fachlichen Inhalt besitzen und dennoch andere PDF-Erstellungszeitstempel oder interne Objekt-IDs enthalten. Bei XML können Formatierung, Namespace-Präfixe oder Attributreihenfolge abweichen. Umgekehrt können wichtige fachliche Eintragungsdaten oder Signaturen unterschiedlich sein und dürfen nicht pauschal entfernt werden.
+
+Vorgesehene Arbeitspakete:
+
+- Logischen Dokumentenschlüssel auf Basis des in C.3.11.4c entwickelten Datensatzschlüssels definieren. Für CD/SI zunächst Quelle, Registeridentität und Dokumenttyp; mehrere Dokumente desselben Typs erfordern einen weiteren stabilen Discriminator, z.B. Anbieter-ID, Veröffentlichung oder Version. Ein Dokumenttyp allein bezeichnet möglicherweise nur eine Kategorie, nicht ein konkretes Dokument.
+- Logischen Schlüssel, einzelne Abrufinstanz und fachliche Version unterscheiden. Abrufzeitpunkt (`retrieved_at`), `source_document_id`, `source_version`, `sha256`, `size_bytes`, `content_sha256` und `normalization_version` als mögliche Metadaten definieren; unbekannte Werte `null`. Der vorhandene binäre `sha256` bleibt erhalten.
+- Innerhalb eines Auftrags vor dem Abruf anhand des logischen Schlüssels und bestätigten Zustands entscheiden, ob ein Dokument bereits vorliegt. Für spätere Aktualisierungsaufträge ausdrücklich neue Versionen bzw. eine Refresh-Regel zulassen; logische Gleichheit beweist keine unveränderte fachliche Version. Anbieter-ETag/Last-Modified nur bei nachgewiesener Bedeutung nutzen.
+- Normalisierungs-Schnittstelle versionieren. XML-Kanonisierung und gezielt bekannte flüchtige Felder untersuchen; sichere Parser verwenden. PDF-Text oder strukturierte Inhalte nur bei nachgewiesener Eignung; Bilder, Tabellen, Signaturen und fachlich relevante Zeitangaben nicht ignorieren. Keine universelle semantische PDF-Gleichheit behaupten.
+- Zunächst logische Schlüssel und Metadatenvertrag implementieren; fachliche Normalisierung nur dort aktivieren, wo unabhängige Testbeispiele sie absichern. Bis dahin `content_sha256: null`, keine semantische Deduplizierung. Auch unterschiedliche Normalisierungs-Versionen nicht unkontrolliert miteinander vergleichen.
+- Versionen und Abrufereignisse nachvollziehbar speichern, Originaldokumente nicht automatisch löschen oder überschreiben. Historische Hashes und Checkpoints unverändert lassen; explizite Migration oder neue Version vorsehen.
+- Tests: exakt gleiche Bytes, verschiedene technische Timestamps bei gleichem fachlichem Inhalt, fachlich relevante Datums-/Textänderung, mehrere Dokumente eines Typs, fehlende Anbieter-ID, unzuverlässige Normalisierung, beschädigte lokale Datei und Aktualisierungsauftrag.
+
+**Abnahmevorschlag:** Innerhalb eines Auftrags werden bestätigte logische Dokumente nicht unnötig erneut angefordert. Binäre Integrität bleibt separat überprüfbar. Unterschiede in flüchtigen Metadaten gelten nur bei nachgewiesener Normalisierung als fachlich irrelevant; unklare Inhalte bleiben getrennt bzw. unbekannt. Keine universelle PDF-Normalisierung als Voraussetzung für C.3.11.5.
+
+### 16.4 C.3.11.4e – Speichereffiziente Dokumentenverarbeitung
+
+**Ziel:** Größere zulässige Originaldokumente zuverlässig verarbeiten, ohne den RAM-Bedarf proportional zur Dateigröße oder Anzahl gleichzeitiger Downloads ansteigen zu lassen. Das aktuelle Standardlimit von 20 MiB wird nicht einfach entfernt, sondern durch geeignete, konfigurierbare Ressourcenbudgets ersetzt.
+
+| Parameter | Diskussionswert, noch nicht implementiert |
+|---|---:|
+| Maximale Dokumentengröße | 1 GiB |
+| Warnschwelle | 100 MiB |
+| Streaming-Blockgröße | 1 MiB |
+| Maximales Datenvolumen pro Auftrag | 20 GiB |
+| Mindestfreier Speicherplatz, Dokumentanzahl und Download-Timeout | Konfigurierbar, Werte noch festzulegen |
+
+Die Werte sind vorläufige technische Vorschläge, keine zugesagten zulässigen Dateigrößen oder Anbieterfreigaben. Limits pro Domain, Auftrag und Worker sowie Infrastruktur-/Speicherbudget sind zu prüfen; eine spätere Policy darf niedrigere Grenzen vorsehen.
+
+Vorgesehene Arbeitspakete:
+
+- `ExecutionPolicy` um explizite Größen-, Volumen-, Speicherplatz- und Zeitbudgets erweitern. Bereits vor bekannten Abrufen Dateigröße/Platz prüfen; tatsächliche empfangene Bytes zählen, auch bei fehlendem oder unzuverlässigem `Content-Length`. Gesamtbudget bei parallelen Workern koordinieren, damit gleichzeitige Abrufe es nicht unkontrolliert überschreiten.
+- Direkte HTTP-Downloads auf tatsächliches Streaming umstellen, nicht erst nach dem vollständigen Puffern blockweise schreiben. Bestehende Sitzungs-/Cookie-Zuordnung, HTTPS-Allowlist, Redirect-Regeln, Zugriffsschutz und Abbruchverhalten beibehalten; keine Wiederholung unklarer Abrufe.
+- Browserdownloads gesondert betrachten: der Browser kann die Datei bereits vollständig empfangen haben, bevor Python Zugriff erhält. Prüfen, welche frühzeitigen Abbruch-/Größenkontrollen bei regulären Browser-Ereignissen tatsächlich möglich sind. Wenn harte Netzwerkbudgets nicht durchsetzbar sind, diese Grenze ausdrücklich ausweisen und den betreffenden Modus nicht als garantiert ressourcenbegrenzt freigeben.
+- Dateien in kontrollierten temporären Pfaden speichern, blockweise hashen (z.B. `hashlib.file_digest`), anschließend validieren, synchronisieren und erst dann als erfolgreich persistieren. Bei Abbruch Teil-/Restdateien nachvollziehbar behandeln; Checkpoint-Zustände dürfen nicht fälschlich `downloaded` werden.
+- Dateitypspezifische Validatoren: PDF-Header und Dateiende gezielt lesen, bei Bedarf geeignete PDF-Strukturprüfung; XML mit sicherem Streaming-Parser und begrenzter Baumhaltung. ZIP und weitere Formate erst mit gesondert validierten Regeln (insbesondere entpackte Größen und Archivstruktur) unterstützen. Header/EOF allein beweisen keine vollständige fachliche PDF-Gültigkeit.
+- Ressourcenlimit als eigene Fehlerursache und im Execution Report/Checkpoint erfassen (z.B. `size_limit_exceeded`, erlaubte und beobachtete Bytes, Quelle des Limits, `requires_review`). Keine automatische KI-Reparatur oder Wiederholung wegen eines Ressourcenlimits.
+- Tests: Datei oberhalb der alten 20-MiB-Grenze, exakt am neuen konfigurierten Limit und darüber, fehlender/falscher `Content-Length`, unterbrochener Stream, wenig Speicherplatz, beschädigtes PDF/XML, paralleles Auftragsbudget, Prüfsummenvergleich mit bekanntem Hash. RAM-Spitzen und Zeit separat messen; synthetische Tests vom Produktivbestand isolieren.
+
+**Abnahmevorschlag:** Zulässige Dateien über 20 MiB können innerhalb ausdrücklich konfigurierter Budgets ohne vollständige Python-Dateipuffer verarbeitet werden. Abbruch bei Ressourcenüberschreitung ist nachvollziehbar, Teildateien werden nicht als Erfolg erfasst, Originalbytes und Hash bleiben korrekt. Wo Browser-/Parserverhalten keine harte Grenze ermöglicht, wird die Einschränkung nachgewiesen und nicht verborgen. Die vorhandenen kleinen PDF-/XML-Downloads und Checkpoint-Tests bleiben funktionsfähig.
+
+### 16.5 C.3.11.5 – Seitenübergreifende Wiederaufnahme
 
 **Ziel:** Einen unterbrochenen Auftrag aus seinem persistenten Checkpoint fortsetzen, ohne bereits erfolgreich beschaffte Dokumente erneut anzufordern oder einen unklaren Zustand zu übergehen.
 
@@ -883,22 +1105,22 @@ Vorgesehene Arbeitspakete:
 
 - Auftragsidentität, Strategieversion und SHA-256, Suchparameter, Dokumentregeln und aktuelle ExecutionPolicy prüfen. Eine Fortsetzung bei widersprüchlichen Angaben verhindern.
 - Exklusiven Zugriff auf einen fortzusetzenden Auftrag sicherstellen; `running` allein ist kein Nachweis für einen aktiven Prozess.
-- Suchnavigation reproduzieren und gespeicherte Seitensignaturen sowie Datensatzidentitäten bis zum Wiederaufnahmepunkt überprüfen. Änderungen der Ergebnismenge oder Reihenfolge erkennen und bei fehlender Übereinstimmung stoppen.
-- Bereits als `downloaded` gespeicherte Dateien hinsichtlich Existenz, Größe, Typ und Prüfsumme kontrollieren; nur bestätigte Dateien überspringen.
+- Suchnavigation erneut ausführen. Falls eine nachweislich stabile, noch gültige Snapshot-/Cursor-Funktion verfügbar ist, diese nach Anbieterregeln nutzen; andernfalls erneut ab Seite 1 beginnen. Datensätze über stabile Schlüssel abgleichen, Seitenpositionen nur als Beobachtungsdaten behandeln. Verschobene, hinzugekommene, umbenannte und nicht mehr auffindbare Datensätze unterscheiden. Mehrdeutige Identität, nicht nachvollziehbare Zustandsänderungen und nicht bestätigbare Navigation führen zu einem kontrollierten Stopp.
+- Bereits als `downloaded` gespeicherte Dateien hinsichtlich Existenz, Größe, Typ und binärer Prüfsumme kontrollieren. Nur bestätigte logische Dokumente im gleichen Auftrags-/Versionsscope überspringen, sofern keine Aktualisierung angefordert ist. Eine fehlende lokale Datei oder ein abweichender Hash ist kein Freibrief zum erneuten Abruf.
 - Ausschließlich eindeutig noch nicht begonnene, erlaubte Abrufe fortsetzen. Zustände `in_progress` und `failed` gesondert diagnostizieren; keine automatische Wiederholung unklarer Abrufe.
 - Fortschritt transaktional weiterführen und die Wiederaufnahme nachvollziehbar protokollieren.
 - Prozessabbruch zwischen Dokumenten, mitten auf einer Seite und zwischen zwei Seiten sowie geänderte Daten, manipulierte Dateien und konkurrierende Fortsetzungsversuche testen.
 
-**Abnahmevorschlag:** Ein synthetischer mehrseitiger Auftrag kann nach Unterbrechung fortgesetzt werden. Bereits verifizierte Dokumente bleiben unverändert, neue Downloads betreffen nur zulässige offene Einträge. Abweichungen führen zu einem kontrollierten Abbruch mit erklärbarem Bericht. Der geplante CLI-Einstieg `--resume <crawl_id>` ist zum dokumentierten Stand noch nicht implementiert.
+**Abnahmevorschlag:** Ein synthetischer mehrseitiger Auftrag kann nach Unterbrechung fortgesetzt werden. Bereits verifizierte Dokumente bleiben unverändert, neue Downloads betreffen nur zulässige offene oder neu beobachtete Einträge. Veränderte Seitenpositionen sind kein Fehler an sich. Unklare Identität, unklare Abrufzustände und nicht bestätigbare Navigation führen zu einem kontrollierten Abbruch mit erklärbarem Bericht. Bei beweglichen Datenbeständen wird keine Snapshot-Vollständigkeit behauptet. Der geplante CLI-Einstieg `--resume <crawl_id>` ist zum dokumentierten Stand noch nicht implementiert.
 
-### 15.3 C.3.11.6 – Vollständigkeitsprüfung und Abschlussbericht
+### 16.6 C.3.11.6 – Vollständigkeitsprüfung und Abschlussbericht
 
 **Ziel:** Verlässlich unterscheiden, ob ein Auftrag technisch beendet ist, alle angezeigten Datensätze verarbeitet wurden oder die gesamte fachlich angeforderte Ergebnismenge nachweislich erfasst ist.
 
 Vorgesehene Arbeitspakete:
 
 - Extrahierte und abgeschlossene Seiten, eindeutige Unternehmen, vorgesehene und erfolgreich validierte Dokumente sowie offene oder fehlerhafte Einträge aus Checkpoint und Execution Report abgleichen.
-- Expliziten Paginierungsendzustand, fehlende Seiten, Duplikate, Sicherheitslimits, Anbietergrenzen und unbekannte Gesamtzahlen berücksichtigen.
+- Expliziten Paginierungsendzustand, fehlende Seiten, wiederholt beobachtete Identitäten, Sicherheitslimits, Anbietergrenzen und unbekannte Gesamtzahlen berücksichtigen. Wiederholte Sichtungen bei dynamischen Daten von widersprüchlichen Schlüsseln und Navigationsschleifen unterscheiden. Beobachtungszeitraum, Änderungen während des Crawls, Snapshot-/Cursor-Verfügbarkeit und verbleibende Abdeckungslücken ausweisen. Bei fehlendem Snapshot kann selbst eine vollständige Traversierung keine punktgenaue Vollständigkeit garantieren.
 - `displayed_results_traversed`, `pagination_end_verified`, `result_limit_detected` und `completeness_verified` fachlich sauber voneinander abgrenzen. Unbekannte Sollmengen bleiben unbekannt (`null`), nicht null Treffer.
 - Die bestehende Validierungslücke für Endzustände hinter dem bisherigen Zwei- bis Drei-Seiten-Fenster schließen; eine überprüfte Endregel und die erforderlichen unabhängigen Referenzen vorsehen.
 - Einen reproduzierbaren Abschlussbericht mit Abdeckungsstatus, Abbruchgrund, Dokumentenintegrität, Laufzeit, LLM-Aufrufen und Kosten erstellen.
@@ -906,7 +1128,7 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Vollständige, begrenzte, unterbrochene und nicht eindeutig prüfbare Aufträge werden korrekt unterschieden. `completeness_verified` wird nur bei ausreichenden Nachweisen gesetzt. Die bestehende Live-Sperre bleibt bis zur Erfüllung der technischen und anbieterseitigen Voraussetzungen bestehen.
 
-### 15.4 Zurückgestellte Themen – C.3.9.1 bis C.3.9.3
+### 16.7 Zurückgestellte Themen – C.3.9.1 bis C.3.9.3
 
 Diese drei Themen wurden vor C.3.10 ausdrücklich zurückgestellt, um den lokalen Pilot nicht durch einen umfangreichen Simulator zu verzögern. Sie sind weiterhin Bestandteil des offenen Entwicklungsbestands, aber nicht der unmittelbar nächste Schritt.
 
@@ -918,7 +1140,7 @@ Diese drei Themen wurden vor C.3.10 ausdrücklich zurückgestellt, um den lokale
 
 Die bestehende Recovery-Implementierung und einzelne synthetische Regressionstests ersetzen keinen vollständigen adaptiven End-to-End-Nachweis. Eine spätere Durchführung mit echter LLM-Anbindung erfordert ausdrücklich freigegebene Testaufrufe und Kostenlimits. Bis dahin bleiben automatische Wiederholung, Reparatur und Aktivierung auf die vorhandenen kontrollierten Mechanismen beschränkt.
 
-### 15.5 C.4 – Generalisierung auf unterschiedliche Zielwebseiten
+### 16.8 C.4 – Generalisierung auf unterschiedliche Zielwebseiten
 
 **Ziel:** Den bisher am Unternehmensregister entwickelten Ansatz auf weitere geeignete und zulässige Zielwebseiten übertragen, ohne für jede Domain einen neuen Crawler implementieren zu müssen.
 
@@ -933,7 +1155,7 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Mehrere unterschiedliche, freigegebene Zielseiten lassen sich über dieselben generischen Komponenten verarbeiten; Unterschiede sind in Konfiguration, Strategie oder klar isolierten Adaptern beschrieben. Die bestehende Unternehmensregister-Strategie bleibt funktionsfähig. Technische und fachliche Extraktionsqualität, Dokumentenintegrität, LLM-Aufrufe und Laufzeiten sind vergleichbar messbar.
 
-### 15.6 C.5 – Persistente Auftragsverwaltung und Datenhaltung
+### 16.9 C.5 – Persistente Auftragsverwaltung und Datenhaltung
 
 **Ziel:** Von einzelnen lokalen Crawls mit auftragsbezogenen SQLite-Dateien zu einer konsistenten Verwaltung mehrerer Aufträge und ihrer Ergebnisse gelangen.
 
@@ -948,7 +1170,7 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Mehrere Aufträge können getrennt verwaltet und nach einem Prozessneustart sicher identifiziert werden. Fortschritte, Dokumente, Strategieversionen und Metriken bleiben eindeutig zugeordnet. Der lokale Betrieb bleibt möglich; eine zentrale externe Datenbank ist noch keine zwingende Voraussetzung.
 
-### 15.7 C.6 – AWS-Architektur und verteilte Verarbeitung
+### 16.10 C.6 – AWS-Architektur und verteilte Verarbeitung
 
 **Ziel:** Den funktionierenden lokalen Crawler als kontrollierten Cloud-Pilot betreiben, ohne die Trennung zwischen KI-gestützter Strategieentwicklung und deterministischer Ausführung aufzugeben.
 
@@ -964,7 +1186,7 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Ein freigegebener, begrenzter Auftrag läuft reproduzierbar in AWS; Dokumente, Strategieversion, Checkpoints und Metriken sind vollständig zugeordnet. Ein Worker-Ausfall erzeugt keinen unkontrollierten Doppelabruf. Die Architektur und ihre Kostenannahmen sind dokumentiert, bevor größere Lasttests oder Skalierung freigegeben werden.
 
-### 15.8 C.7 – Infrastruktur- und Betriebskosten
+### 16.11 C.7 – Infrastruktur- und Betriebskosten
 
 **Ziel:** Die Wirtschaftlichkeit des Crawlers nicht nur anhand der LLM-Kosten, sondern anhand der gesamten Kosten pro erfolgreich verarbeitetem Auftrag und Datensatz beurteilen.
 
@@ -979,11 +1201,11 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Ein nachvollziehbares Kostenmodell mit gemessenen Baselines, dokumentierten Annahmen, Unsicherheiten und klarer Trennung von einmaligen und laufenden Kosten liegt vor. Die Kosten je erfolgreichem Ergebnis können mit dem bisherigen Benchmark verglichen werden. Konkrete AWS-Preise oder eine Wirtschaftlichkeitsprognose werden erst mit der tatsächlichen Architektur und aktuellen Preisgrundlagen ermittelt.
 
-### 15.9 Übergreifende Leitlinien und Freigabekriterien
+### 16.12 Übergreifende Leitlinien und Freigabekriterien
 
 Für alle weiteren Phasen gelten die bisherigen Projektkonventionen: Produktivcode unter `src/crawler/`, Tests unter `src/tests/`, zentrale Pfadverwaltung in `ProjectPaths.py`, direkte Modulimports und ausführliche gemeinsame Testausgabe. Neue Komponenten und Datenformate werden in diesem Handbuch ergänzt; historische Daten und versionierte Strategien bleiben unverändert.
 
 Jeder Entwicklungsschritt soll eine klar abgegrenzte Implementierung, reproduzierbare Tests, dokumentierte Einschränkungen und einen prüfbaren Übergang zum nächsten Schritt enthalten. Technische Funktionalität, fachliche Datenqualität, tatsächliche Anbieterfreigabe und wirtschaftliche Bewertung sind getrennte Kriterien. Der erfolgreiche Test eines lokalen oder begrenzten Auftrags ist keine automatische Freigabe für vollständige Live-Abrufe.
 
-**Unmittelbar nächster Schritt:** C.3.11.5 – Seitenübergreifende Wiederaufnahme. Danach C.3.11.6 abschließen und die offenen Validierungs- und Freigabenachweise klären, bevor der vollständige Live-Betrieb in Betracht gezogen wird.
+**Unmittelbar nächster Schritt:** C.3.11.4c – Dynamische Ergebnismengen und stabile Datensatzidentität. Danach C.3.11.4d, C.3.11.4e, C.3.11.5 und C.3.11.6 bearbeiten und die offenen Validierungs- und Freigabenachweise klären, bevor der vollständige Live-Betrieb in Betracht gezogen wird.
 
