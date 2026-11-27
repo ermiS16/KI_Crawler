@@ -18,7 +18,20 @@ class OpenAIClient:
         self.client = OpenAI()
         self.log_path = Path(log_path)
 
-    def create(self, model, prompt, crawl_id=None, web_search=False, domains=None, schema=None, **kwargs):
+    def create(self, model, prompt, crawl_id=None, web_search=False, domains=None, schema=None,
+               browser_use=False, start_url=None, max_steps=20, headless=False, **kwargs):
+
+        if browser_use:
+            from BrowserUse import run_browser
+
+            if web_search:
+                raise ValueError("Browser Use and Web Search cannot be combined in this pilot")
+
+            return run_browser(
+                self, model, prompt, crawl_id, schema, domains, start_url,
+                max_steps=max_steps, headless=headless, **kwargs
+            )
+
         start = time.perf_counter()
 
         if web_search:

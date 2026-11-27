@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
+from defusedxml.ElementTree import fromstring
 
 
 class DocumentDownloader:
@@ -78,8 +79,11 @@ class DocumentDownloader:
 
     def _fetch(self, document):
         url = document['document_url']
+        file_type = document['file_type']
+
         if urlparse(url).scheme not in ('http', 'https') or not urlparse(url).hostname:
             raise ValueError('Invalid HTTP URL')
+
         with requests.get(url, headers=self.headers, timeout=(10, 60), stream=True) as response:
             response.raise_for_status()
             content = bytearray()
@@ -88,8 +92,20 @@ class DocumentDownloader:
                 if len(content) > self.max_size:
                     raise ValueError('Maximum file size exceeded')
             final_url = response.url
-        if not content.startswith(b'%PDF-'):
-            raise ValueError('Not a PDF file')
+
+        if file_type == "pdf":
+            if not content.startswith(b"%PDF-"):
+                raise ValueError("Keine PDF-Datei")
+
+        elif file_type == "xml":
+            root = fromstring(bytes(content))
+
+            if root.tag.split("}")[-1].lower() == "html":
+                raise ValueError("HTML statt XML-Dokument erhalten")
+
+        else:
+            raise ValueError(f"Nicht unterstützter Dateityp: {file_type}")
+
         file_hash = hashlib.sha256(content).hexdigest()
         existing = next(self.output_dir.glob(f'*_{file_hash}.pdf'), None)
         if existing:
