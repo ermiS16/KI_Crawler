@@ -5,15 +5,16 @@
 **Geltungsbereich:** vollständiger konsolidierter `src/`-Stand  
 **Ablage:** `README.md` im Repository-Hauptverzeichnis
 
-Diese Dokumentation ist ein Betriebs- und Entwicklerhandbuch. Sie beschreibt den implementierten Stand, die Verzeichnisse, die Verantwortlichkeiten sämtlicher Python-Dateien, die Aufrufmöglichkeiten, die erzeugten Daten und die Grenzen der aktuellen Ausführung. Geplante Funktionen sind ausdrücklich als solche gekennzeichnet.
+Diese Dokumentation ist ein Betriebs- und Entwicklerhandbuch. Die ausführliche Implementierungsreferenz zu allen eigenen Python-Modulen, Klassen, Funktionen und Methoden befindet sich zentral in [MODULES.md](MODULES.md). Sie beschreibt den implementierten Stand, die Verzeichnisse, die Verantwortlichkeiten sämtlicher Python-Dateien, die Aufrufmöglichkeiten, die erzeugten Daten und die Grenzen der aktuellen Ausführung. Geplante Funktionen sind ausdrücklich als solche gekennzeichnet.
 
 ## Installation – Schnellstart
 
-Voraussetzungen: Debian/Linux beziehungsweise eine kompatible POSIX-Umgebung, Python 3.14 oder neuer (`requires-python = ">=3.14"`) und für den bevorzugten Installationsweg der Paketmanager `uv`. Die Projektdateien `README.md`, `pyproject.toml`, `uv.lock` und `requirements.txt` liegen gemeinsam im Repository-Hauptverzeichnis, neben dem Verzeichnis `src/`.
+Voraussetzungen: Debian/Linux beziehungsweise eine kompatible POSIX-Umgebung, Python 3.14 oder neuer (`requires-python = ">=3.14"`) und für den bevorzugten Installationsweg der Paketmanager `uv`. Die Projektdateien `README.md`, `MODULES.md`, `pyproject.toml`, `uv.lock` und `requirements.txt` liegen gemeinsam im Repository-Hauptverzeichnis, neben dem Verzeichnis `src/`.
 
 ```text
 KI-Crawler/
 ├── README.md
+├── MODULES.md         # zentrale Modul-, Klassen- und Funktionsreferenz
 ├── pyproject.toml
 ├── uv.lock
 ├── requirements.txt
@@ -128,6 +129,8 @@ Weitere Details zu Umgebung, Systemanforderungen und Funktionsprüfung stehen in
 ## 1. Ziel und Architektur
 
 Der KI-Crawler ist ein lokaler Python-Pilot zur Extraktion strukturierter Daten aus Webseiten und zur Beschaffung der zugehörigen Originaldokumente. Die Architektur soll später auf eine AWS-Infrastruktur übertragen werden können. Der aktuelle Anwendungsfall ist die öffentliche Registerinformationssuche des Unternehmensregisters (Hamburg, Amtsgericht Hamburg, HRB). Ziel ist, die KI gezielt für die Entdeckung und gegebenenfalls Reparatur einer Strategie einzusetzen und die regulären Crawls ohne weitere LLM-Anfragen auszuführen.
+
+**Zielarchitektur ohne Web Search:** Die Zielwebseite wird dem Auftrag vorgegeben. Strategy Discovery verwendet die eigenen Browser-/DOM-Tools mit Playwright, nicht das Web-Search-Tool. Gemäß der projektspezifischen Company-Policy ist Web Search für den geplanten AWS-Betrieb in den vorgesehenen europäischen Regionen nicht verfügbar und deshalb aus dem aktiven Funktionsumfang ausgeschlossen. Diese Vorgabe ist verbindlich, unabhängig von späteren Änderungen des Anbieterangebots. Der aktuelle lokale Quellstand enthält noch historische Web-Search-Pfade; deren Entfernung ist unter A-02 geplant. Historische Nutzungs- und Kostendaten bleiben unverändert.
 
 Die Aufgaben sind getrennt:
 
@@ -265,7 +268,7 @@ uv run python tests/main_tests.py test_project_paths test_checkpoint test_test_r
 
 | Datei | Verantwortung | Zentrale Schnittstellen / Ausführung |
 |---|---|---|
-| `OpenAIClient.py` | Wrapper für Responses API, Web Search, Structured Outputs und Browser-Loop; Nutzungs- und Kostenlogging | `OpenAIClient(log_path=...)`, `create(model, prompt, ...)`; Bibliothek, keine eigene CLI |
+| `OpenAIClient.py` | Wrapper für Responses API, Structured Outputs und Browser-Loop; Nutzungs- und Kostenlogging; historischer Web-Search-Zweig noch vorhanden, für Zielbetrieb ausgeschlossen | `OpenAIClient(log_path=...)`, `create(model, prompt, ...)`; Bibliothek, keine eigene CLI |
 | `BrowserUse.py` | Lokale Browserwerkzeuge für den KI-Agenten; DOM lesen und untersuchen, Browseraktionen, Funktionsaufruf-Loop und Timing | `BrowserUse`, `browser_loop`, `run_browser`, `allowed_url`, `measure`, `write_timings` |
 | `StrategySchema.py` | JSON-Schema und erlaubte Locator-, Navigations-, Feld-, Dokument- und Paginierungsstrukturen | `DISCOVERY_SCHEMA`, `STRATEGY_SCHEMA`; v2 lesbar, neue Discovery v3 |
 | `main_discovery.py` | KI-gestützte Discovery oder lokaler Import einer Strategie; Speichern eines Kandidaten | CLI, siehe Abschnitt 5 |
@@ -504,7 +507,7 @@ Das konsolidierte Archiv ist bereits migriert. `--apply` ist nur für noch vorha
 
 `crawler/main_execute.py` akzeptiert `--candidate-version`, `--download`, `--headless`, `--max-companies`, `--max-pages` und die vier Suchfilter. Bevorzuge die asynchrone CLI, die zusätzlich den zertifizierten Scope und Provider-Policy prüft.
 
-`crawler/crawler.py` startet direkt den Web-Search-Piloten, `crawler/main_browser.py` den früheren KI-Browser-Piloten und `crawler/retry_downloads.py` die alte HTTP-Queue-Verarbeitung. Alle können bei Ausführung tatsächliche Anfragen auslösen, die ersten beiden auch API-Kosten. Sie sind kein regulärer Bestandteil des aktuellen Betriebsablaufs. Keine automatische Ausführung dieser Dateien beim Testimport.
+`crawler/crawler.py` startet direkt den Web-Search-Piloten, `crawler/main_browser.py` den früheren KI-Browser-Piloten und `crawler/retry_downloads.py` die alte HTTP-Queue-Verarbeitung. Alle können bei Ausführung tatsächliche Anfragen auslösen, die ersten beiden auch API-Kosten. Sie sind kein regulärer Bestandteil des aktuellen Betriebsablaufs. Den Web-Search-Piloten nicht ausführen; das Tool ist durch die Company-Policy ausgeschlossen. Keine automatische Ausführung dieser Dateien beim Testimport.
 
 ## 6. Strategien und Referenzen
 
@@ -825,6 +828,23 @@ if __name__ == '__main__':
 
 `TestRunner` vor Produktivmodulen importieren, wenn der Test direkt als Skript ausführbar bleiben soll. Tests mit temporären Verzeichnissen und synthetischen Seiten vom Produktivbestand isolieren. SDK-Mocks statt kostenpflichtiger Aufrufe für Unit-Tests verwenden. Test- und Live-Betrieb ausdrücklich unterscheiden.
 
+### 13.1 Zentrale Moduldokumentation und Definition of Done
+
+Die Dokumentation besteht aus genau zwei zentralen Markdown-Handbüchern im Repository-Hauptverzeichnis:
+
+| Datei | Verantwortlichkeit |
+|---|---|
+| `README.md` | Architektur, Installation, Verzeichnisse, Betriebsabläufe, CLI-Referenz, Feature-/Story-Status, Meilensteine und Roadmap. |
+| [`MODULES.md`](MODULES.md) | Ausführliche Implementierungsreferenz sämtlicher eigener Python-Module, Klassen, Funktionen und Methoden einschließlich interner Helfer, lokaler Callbacks, Properties und Tests. |
+
+Für jedes eigene Modul ist Zweck, Abgrenzung, Einordnung in Features/Storys, relevante Abhängigkeiten und Verwendung zu erläutern. Für jede Klasse sind Verantwortung, Basisklassen, Zustand/Konfiguration und Methoden zu beschreiben. Für jede Funktion/Methode enthält die Referenz mindestens Aufgabe, tatsächliche Signatur, Parameter und Rückgabevertrag, relevante Vorbedingungen, Fehler-/Abbruchverhalten, Seiteneffekte (Dateien, Datenbanken, Netzwerk, Browser, LLM, Zustand), sowie wichtige aufgerufene Komponenten. Bei Tests gehören Prüfabsicht, Fixtures und erwartete Ergebnisse/Assertions dazu. Nicht öffentliche Schnittstellen werden klar als solche eingeordnet.
+
+Die umfangreiche Moduldokumentation steht **nicht** in den Python-Dateien. Normale Kommentare zur Erläuterung nicht offensichtlicher Implementierungsdetails, Invarianten, Entscheidungen und Fehlerbehandlung bleiben ausdrücklich erwünscht. Bestehende Kommentare und kurze sinnvolle Docstrings werden nicht pauschal entfernt; keine ausführlichen API-Handbücher in den Code schreiben. Es wird auch keine separate Dokumentationsdatei pro Modul angelegt.
+
+**Verbindliche Definition of Done (alle Features A–H):** Jede neue oder geänderte Klasse/Funktion wird im selben Entwicklungsstand in `MODULES.md` ergänzt bzw. korrigiert. Bei Umbenennung oder Entfernung wird die Referenz bereinigt; Quellverweise und Signaturen müssen zum Code passen. Änderungen an CLI, Datenformaten, Pfaden, Einschränkungen, Meilensteinen und Story-Status werden zusätzlich in der README nachgeführt. Eine geplante Funktion wird nicht als implementiert dokumentiert. Die Inventarisierung kann automatisiert erfolgen, fachliche Verträge und Auswirkungen müssen jedoch geprüft werden. Eine vollständig erfasste Funktionsliste ersetzt weder Code-Review noch Tests.
+
+### 13.2 Erweiterung auf weitere Domains
+
 Für eine neue Domain müssen künftig Aufgabenbeschreibung, Allowlist, Start-URL, Parameter und erwartete Datenfelder, Discovery-/Strategievertrag, Provider-Policy und unabhängige Referenzen eingerichtet werden. Die generischen Executors sind wiederverwendbar, die bestehenden CLI-Konstanten hingegen noch auf das Unternehmensregister zugeschnitten. Eine generische Domain-/Task-CLI oder AWS-Orchestrierung ist nicht Teil des aktuellen Standes.
 
 ## 14. Aktueller Projektstatus und offene Punkte
@@ -833,9 +853,9 @@ Für eine neue Domain müssen künftig Aufgabenbeschreibung, Allowlist, Start-UR
 
 | Feature | Ziel | Erreicht | Aktueller Stand / offene Storys |
 |---|---|---|---|
-| A | API-Anbindung und Verbindungstest | A-01: API-Pilot bestätigt. | Lokal bestätigt; kein neues eigenständiges Arbeitspaket vorgesehen. |
+| A | API-Anbindung und Verbindungstest | A-01: API-Pilot bestätigt. | Wieder geöffnet: A-02 – API-Konsolidierung und Entfernung der ausgeschlossenen Web-Search-Pfade (geplant). |
 | B | Token- und Kosten-Tracking | B-01: CSV-Logging; Cached Input und Suchkosten. | Erweiterung vorgeschlagen: B-02 Kosten-/Logvollständigkeit und Zuordnung. |
-| C | KI-gesteuerte Seitennavigation | C-01–C-09: Web Search, Browser, Strategien, Executor, Recovery, Paginierung und Vollmodus. | In Entwicklung: C-10 dynamische Navigation, C-11 Generalisierung. |
+| C | KI-gesteuerte Seitennavigation | C-02–C-09: Browser, Strategien, Executor, Recovery, Paginierung und Vollmodus. Web Search gehört nicht mehr zum Funktionsumfang. | In Entwicklung: C-10 dynamische Navigation, C-11 Generalisierung. |
 | D | Strukturierte Datenextraktion | D-01–D-02: JSON-Pilot und deterministische Feldextraktion. | Wieder geöffnet: D-03 stabile Identität, D-04 Extraktionsgeneralisierung. |
 | E | Dokumentensuche und Download | E-01–E-03: HTTP-/Browserdownload und Download-Pacing. | Wieder geöffnet: E-04 Dokumentidentität, E-05 Streaming, E-06 weitere Quellen. |
 | F | Qualitätsprüfung und Halluzinationskontrolle | F-01–F-03, F-07: Klassifikation, Zertifikate, Mehrseitenprüfung und Testsystem. | In Entwicklung: F-04 dynamische Validierung, F-05 Vollständigkeit, F-08 fachliche Qualität; F-06 zurückgestellt. |
@@ -857,7 +877,7 @@ Die Meilensteine fassen wesentliche nachgewiesene Projektergebnisse zusammen und
 | Meilenstein | Zugehörige Storys | Ergebnis / Nachweis | Grenze des Nachweises |
 |---|---|---|---|
 | API-Anbindung und Kostenmessung | A-01, B-01 | Erfolgreiche Responses-API-Anbindung; CSV-Logging mit Crawl-ID, Tokenverbrauch, Cached Input, Suchanfragen und Kosten. | API-Kosten getrennt vom ChatGPT-Abonnement; mindestens ein protokollierter Kostenwert unvollständig. |
-| Interaktive Registersuche und Dokumentenbeschaffung | C-01, C-02, D-01, E-02 | Web Search erprobt; Browsersteuerung ermöglicht die interaktive Registersuche und den Abruf eines CD/PDF und SI/XML. | Web Search allein konnte die interaktive Registersuche nicht bewältigen. Keine allgemeine Extraktions- oder Abrufgarantie. |
+| Interaktive Registersuche und Dokumentenbeschaffung | C-02, D-01, E-02 | Browsersteuerung ermöglicht die interaktive Registersuche und den Abruf eines CD/PDF und SI/XML. Web Search wurde im Pilot untersucht und anschließend verworfen. | Web Search konnte die interaktive Suche nicht bewältigen und ist laut Company-Policy nicht für die geplante AWS-Umgebung zulässig. Keine allgemeine Extraktions- oder Abrufgarantie. |
 | Wiederverwendbare Strategien und deterministische Ausführung | C-03–C-06, D-02, G-01 | Schema, KI-gestützte Discovery, versionierter StrategyStore und deterministischer Executor implementiert. Ein Unternehmen mit zwei Dokumenten in 8,472 s ohne LLM-Aufrufe statt 63,589 s und 17 LLM-Aufrufen im agentischen Referenzlauf. | Vergleich zweier konkreter Pilotläufe; kein statistisch allgemeiner Durchsatznachweis. |
 | Asynchrone Ausführung mit kontrollierter Parallelität | C-07, E-02, F-01 | Sequenzieller Live-Test mit drei Unternehmen, 6/6 Dokumenten in 17,470 s und ohne LLM-Aufrufe. HTTP-500-Fehler als `SERVER_ERROR` klassifiziert. | Drei parallele Live-Versuche lieferten 4/6, 4/6 und 1/6 Dokumenten; Ursache nicht abschließend nachgewiesen. Domain-Policy bleibt bei einem Worker. |
 | Kontrollierte Recovery und Strategiefreigabe | C-08, F-01, F-02, H-03 | Lokale Strukturprüfung und begrenzte Strategiereparatur; hash-gebundene Validierungszertifikate, Aktivierung/Rollback und begrenzter einseitiger ResumePlanner. Strategie 1 validiert. | Strategie 1 nicht aktiviert; kein realer adaptiver End-to-End-Nachweis. Allgemeine SQLite-Wiederaufnahme offen. |
@@ -900,14 +920,17 @@ Status: **erreicht** = in dem dokumentierten Scope nachgewiesen; **teilweise** =
 | Story | Status | Ziel / Abnahme |
 |---|---|---|
 | A-01 – API-Pilot | Erreicht | Erfolgreiche Responses-API-Anbindung und Verbindungstest. |
+| A-02 – API-Konsolidierung ohne Web Search | Offen | Nicht mehr benötigten Web-Search-Zweig und zugehörige Legacy-Aufrufpfade kontrolliert entfernen; Browser-Discovery, Structured Outputs und KI-Reparatur bleiben funktionsfähig. |
 
-Keine neue eigenständige Story im aktuellen Backlog. Bei einer später notwendigen Änderung am API-Vertrag wird A wieder geöffnet; Cloud-Deployment gehört zu H-05, Kostenlogging zu B.
+#### A-02 – API-Konsolidierung ohne Web Search
+
+Die Web-Search-Funktion wird wegen des nicht benötigten Anwendungsfalls und der Company-Policy aus dem Zielbetrieb entfernt. Arbeitspaket: Aufrufstellen und Tool-Konfiguration in `OpenAIClient.py` prüfen/entfernen; Legacy-Skript `crawler.py` kontrolliert stilllegen oder erforderliche Funktionen isolieren; API-/Browser- und Offline-Regression ausführen. Das historische Kosten-/Usage-Schema einschließlich der Web-Search-Spalten und die Lesekompatibilität des BenchmarkAnalyzers bleiben erhalten (B-02/G-02). `MODULES.md` und README gemeinsam mit dem Code aktualisieren. **Abnahme:** kein unterstützter aktueller Auftrag benötigt oder sendet Web-Search-Tools; Discovery, Structured Outputs, begrenzte Reparatur und Kostenlogging bleiben funktionsfähig; historische Dateien unverändert. Kein Cloud-Deployment im Rahmen von A-02 (H-05).
 
 ### 16.3 B – Token- und Kosten-Tracking
 
 | Story | Status | Ziel / Abnahme |
 |---|---|---|
-| B-01 – Nutzungs- und Kostenlogging | Erreicht im Pilot | CSV je API-Aufruf mit Input, Cached Input, Output, Web Search und Kosten; eindeutige Crawl-ID. |
+| B-01 – Nutzungs- und Kostenlogging | Erreicht im Pilot | CSV je API-Aufruf mit Input, Cached Input, Output, historischen Web-Search-Metriken und Kosten; eindeutige Crawl-ID. |
 | B-02 – Kosten-/Logvollständigkeit und Zuordnung | Offen (Vorschlag) | Verbrauch, Kostenquelle, Zeitpunkt und Auftrags-/Run-ID nachvollziehbar speichern; unbekannte Preise/Kosten ausdrücklich unbekannt lassen. |
 
 B-02 ergänzt den vorhandenen Logger, ohne historische Zeilen umzuschreiben. Abrechnungsversion und fehlende Werte dokumentieren; Erfolg/Fehler und mehrfache Aufrufe eindeutig zuordnen. Tests für fehlende Kostendaten, Cached Input, Suchkosten und unterschiedliche Logformate; G-02 bleibt für die Auswertung zuständig. Die Erfassung zusätzlicher Infrastrukturmesswerte erfolgt in Zusammenarbeit mit H-05 und G-04. Keine aktuellen Preise in dieser Planung festschreiben.
@@ -916,7 +939,6 @@ B-02 ergänzt den vorhandenen Logger, ohne historische Zeilen umzuschreiben. Abr
 
 | Story | Status | Ziel / Abnahme |
 |---|---|---|
-| C-01 – Web Search | Erreicht im Pilot | Öffentliche Quellen und Links ermitteln; Grenzen interaktiver Masken dokumentiert. |
 | C-02 – Browserautomatisierung | Erreicht im Pilot | Formulare, Filter, Ergebnisnavigation mittels Playwright. |
 | C-03 – StrategySchema | Erreicht | Versionierter Vertrag für Navigation und Extraktion, lokale Schema-Prüfung. |
 | C-04 – Strategy Discovery | Erreicht im Pilot | Wiederverwendbare Regeln durch KI gewinnen. |
@@ -927,6 +949,8 @@ B-02 ergänzt den vorhandenen Logger, ohne historische Zeilen umzuschreiben. Abr
 | C-09 – Paginierung, Endregel und Vollmodus | Teilweise | Expliziter Endvertrag und `--all-results` lokal; zwei Seiten live technisch bestätigt, End-/Freigabenachweis offen (F-03/F-05). |
 | C-10 – Dynamische Navigation | Offen | Seitenwechsel trotz beweglicher Treffer; Fortschritt und echte Schleifen erkennen. |
 | C-11 – Generalisierung der Navigation | Offen | Weitere geeignete Zielwebseiten über generische Strategie und isolierte Adapter. |
+
+Web Search ist keine Story im aktiven Backlog mehr. Die verbleibenden Story-IDs C-02 bis C-11 bleiben stabil; die technische Bereinigung gehört zu A-02. Strategy Discovery setzt eine bekannte Start-URL voraus.
 
 #### C-10 – Dynamische Navigation
 
@@ -1181,7 +1205,7 @@ Vorgesehene Arbeitspakete:
 Vorgesehene Arbeitspakete:
 
 - Laufzeit- und Ressourcenbedarf des Browser-Workers messen und geeignete Ausführungsmodelle für Python und Chromium vergleichen.
-- Containerisierung, Konfiguration, Secret-Verwaltung und Deployment einschließlich wiederholbarer Infrastrukturdefinitionen untersuchen.
+- Containerisierung, Konfiguration, Secret-Verwaltung und Deployment einschließlich wiederholbarer Infrastrukturdefinitionen untersuchen. Die vorgesehenen europäischen Regionen und Company-Policy einhalten; keine Abhängigkeit von Web Search (A-02).
 - Auftragssteuerung, Warteschlange, Worker, Strategieverwaltung, persistente Zustände und Dokumentenspeicher als getrennte Verantwortlichkeiten entwerfen.
 - Mögliche AWS-Dienste evaluieren (z.B. ECS/Fargate oder EC2 für Worker, SQS für Aufträge, S3 für Originaldokumente, DynamoDB oder RDS für Zustände sowie CloudWatch für Beobachtbarkeit). Diese Auswahl ist ausdrücklich noch keine Architekturentscheidung.
 - Domainübergreifende Parallelität von anbieterseitigen Abruflimits trennen. Globale und domainbezogene Budgets, koordinierte Auftragsvergabe, kontrollierte Beendigung und Fehlerbehandlung vorsehen. Die bisherige Beschränkung auf einen Worker beim Unternehmensregister nicht ohne neue Freigabe aufheben.
@@ -1203,7 +1227,7 @@ Die Reihenfolge ist eine vorgeschlagene Arbeitsplanung, keine neue Feature-Hiera
 | 5 – Abschluss-/Freigabenachweis | F-02, F-03, F-05 | Offene fachliche Referenzen, Endregel und späterer Download, Abdeckung und ausdrückliche Anbieterfreigabe. Technische Vorarbeiten können früher beginnen. |
 | 6 – Generalisierung | C-11, D-04, E-06, F-08 | Neue Domains, Extraktionsverträge, Dokumenttypen und unabhängige Referenzen gemeinsam evaluieren. Fachliche Qualitätsprüfungen beginnen bereits bei D-03/E-04. |
 | 7 – Auftragsverwaltung und Cloud | H-04, H-05 | Mehrere Jobs, Speicherabstraktionen und Cloud-Integration; keine automatische Freigabe durch lokale Tests. |
-| Begleitend | B-02, F-07, G-02/G-03/G-04 | Logging und Regression fortlaufend; Modellvergleich bei geeigneten Referenzen, Cloud-Kosten bei tatsächlichen Cloud-Messungen. |
+| Begleitend | A-02, B-02, F-07, G-02/G-03/G-04 | API-Bereinigung ohne Web Search vor AWS-Betrieb, Logging und Regression fortlaufend; Modellvergleich bei geeigneten Referenzen, Cloud-Kosten bei tatsächlichen Cloud-Messungen. |
 | Zurückgestellt | F-06 | Vor einer Freigabe autonomer Reparaturen erneut bewerten; kein umfangreicher Simulator als unmittelbare Voraussetzung. |
 
 ```mermaid
@@ -1228,7 +1252,7 @@ flowchart TD
 
 ### 16.11 Übergreifende Leitlinien und Freigabekriterien
 
-Für alle weiteren Phasen gelten die bisherigen Projektkonventionen: Produktivcode unter `src/crawler/`, Tests unter `src/tests/`, zentrale Pfadverwaltung in `ProjectPaths.py`, direkte Modulimports und ausführliche gemeinsame Testausgabe. Neue Komponenten und Datenformate werden in diesem Handbuch ergänzt; historische Daten und versionierte Strategien bleiben unverändert.
+Für alle weiteren Phasen gelten die bisherigen Projektkonventionen: Produktivcode unter `src/crawler/`, Tests unter `src/tests/`, zentrale Pfadverwaltung in `ProjectPaths.py`, direkte Modulimports und ausführliche gemeinsame Testausgabe. Neue Komponenten und Datenformate werden in diesem Handbuch ergänzt; alle eigenen Module, Klassen und Funktionen werden zentral in [MODULES.md](MODULES.md) nachgeführt (Definition of Done in Abschnitt 13.1). Historische Daten und versionierte Strategien bleiben unverändert.
 
 Jeder Entwicklungsschritt soll eine klar abgegrenzte Implementierung, reproduzierbare Tests, dokumentierte Einschränkungen und einen prüfbaren Übergang zum nächsten Schritt enthalten. Technische Funktionalität, fachliche Datenqualität, tatsächliche Anbieterfreigabe und wirtschaftliche Bewertung sind getrennte Kriterien. Der erfolgreiche Test eines lokalen oder begrenzten Auftrags ist keine automatische Freigabe für vollständige Live-Abrufe.
 
