@@ -1,8 +1,8 @@
 # KI-Crawler – Technische Projektdokumentation
 
-**Implementierungsstand:** C.3.11.4b · 27. November 2026  
-**Dokumentationsstand:** 28. November 2026 · Roadmap erweitert um C.3.11.4c–e  
-**Geltungsbereich:** vollständiges `src/` aus `KI_Crawler_src_C3114b.zip`  
+**Implementierungsstand:** Konsolidierter lokaler Pilot · 27. November 2026  
+**Dokumentationsstand:** 28. November 2026 · Feature-basierte Roadmap A–H  
+**Geltungsbereich:** vollständiger konsolidierter `src/`-Stand  
 **Ablage:** `README.md` im Repository-Hauptverzeichnis
 
 Diese Dokumentation ist ein Betriebs- und Entwicklerhandbuch. Sie beschreibt den implementierten Stand, die Verzeichnisse, die Verantwortlichkeiten sämtlicher Python-Dateien, die Aufrufmöglichkeiten, die erzeugten Daten und die Grenzen der aktuellen Ausführung. Geplante Funktionen sind ausdrücklich als solche gekennzeichnet.
@@ -122,8 +122,8 @@ Weitere Details zu Umgebung, Systemanforderungen und Funktionsprüfung stehen in
 12. [Fehlerbehandlung und Betrieb](#12-fehlerbehandlung-und-betrieb)
 13. [Entwicklungskonventionen und Erweiterung](#13-entwicklungskonventionen-und-erweiterung)
 14. [Aktueller Projektstatus und offene Punkte](#14-aktueller-projektstatus-und-offene-punkte)
-15. [Vollständige Projekthistorie](#15-vollständige-projekthistorie)
-16. [Weitere Entwicklungsroadmap](#16-weitere-entwicklungsroadmap)
+15. [Erreichte Meilensteine](#15-erreichte-meilensteine)
+16. [Feature-basierte Entwicklungsroadmap](#16-feature-basierte-entwicklungsroadmap)
 
 ## 1. Ziel und Architektur
 
@@ -168,8 +168,6 @@ Alle nachfolgenden Shell-Beispiele verwenden `src` als Working Directory, sofern
 
 ```text
 src/
-├── README_C3114b.md
-├── README_SRC_C3114b.md
 ├── crawler/                         # 30 Python-Dateien: Produktivcode und CLIs
 ├── tests/                           # 18 Python-Dateien: Tests, Runner, Test-CLI
 ├── strategies/
@@ -533,7 +531,7 @@ Die vorhandene Version 1 verwendet Schema 2. Ihre Parameter sind `federal_state`
 
 Der Schlüssel besteht in Version 1 aus `company_name`, `register_court`, `register_type`, `register_number` in dieser Reihenfolge. Nicht allein nach Firmenname deduplizieren. Die aktuelle Zeilenregel verwendet `tr[data-testid="companyDataRow"]`. Registerinformationen werden teilweise aus einer geprüften vorhergehenden Tabellenzeile extrahiert. CSS-Selektoren und ARIA-Rollen können sich bei Änderungen der Webseite ändern; nicht als allgemein gültige Register-API behandeln.
 
-Schema 3 erweitert den Paginierungsvertrag um `end`. Zulässig sind eine explizite Regel für ein deaktiviertes Vorwärtselement (`next_disabled`) oder einen sichtbaren Endmarker (`visible_marker`), bzw. `null` für unbekannt. Ein fehlender oder versteckter Link allein ist kein Endnachweis. Die Executor-Logik prüft stabile, unterschiedliche Seiten-Signaturen sowie seitenübergreifend eindeutige Schlüssel. Gleichwertige sichtbare Vorwärtslinks werden nur nach Prüfung gleicher Ziel-URL und Zustände zusammengefasst; widersprüchliche Links führen zum Abbruch. Bestehende Schema-2-Dateien werden nicht nachträglich umgeschrieben. Die aktuelle Forderung nach disjunkten Seitenschlüsseln und stabilen Seiten-Hashes zwischen Sitzungen ist für dynamische Ergebnismengen zu streng; C.3.11.4c soll diese Prüfungen differenzieren (siehe Kapitel 16). Der bestehende Schlüssel enthält einen veränderlichen Firmennamen; auch dies ist Gegenstand von C.3.11.4c.
+Schema 3 erweitert den Paginierungsvertrag um `end`. Zulässig sind eine explizite Regel für ein deaktiviertes Vorwärtselement (`next_disabled`) oder einen sichtbaren Endmarker (`visible_marker`), bzw. `null` für unbekannt. Ein fehlender oder versteckter Link allein ist kein Endnachweis. Die Executor-Logik prüft stabile, unterschiedliche Seiten-Signaturen sowie seitenübergreifend eindeutige Schlüssel. Gleichwertige sichtbare Vorwärtslinks werden nur nach Prüfung gleicher Ziel-URL und Zustände zusammengefasst; widersprüchliche Links führen zum Abbruch. Bestehende Schema-2-Dateien werden nicht nachträglich umgeschrieben. Die aktuelle Forderung nach disjunkten Seitenschlüsseln und stabilen Seiten-Hashes zwischen Sitzungen ist für dynamische Ergebnismengen zu streng; C-10 (dynamische Navigation) und F-04 (dynamische Validierung) sollen diese Prüfungen differenzieren (siehe Kapitel 16). Der bestehende Schlüssel enthält einen veränderlichen Firmennamen; dessen Ablösung gehört zu D-03 (stabile Datensatzidentität).
 
 ### 6.3 Manuelle Referenzen (`references/`)
 
@@ -551,9 +549,9 @@ Referenzen sind Eingabedaten, keine automatisch erzeugten Validierungsberichte. 
 - Dokumentenstichproben: `documents/validation/<validation_id>/<crawl_id>/`.
 - Alte Pilotdaten: direkte Dateien in `documents/` und Unterordner wie `hamburg_de/`; bei Migration beibehalten.
 
-Dateien nicht unabhängig vom zugehörigen Bericht/Checkpoint umbenennen, verschieben oder inhaltlich verändern. Historische Berichte können relative oder absolute Pfade enthalten. Eine Verzeichnisumstellung darf nicht blind in historischen JSONs umgeschrieben werden; bei Verlagerung auf einen anderen Host ist die Pfadauflösung gesondert zu prüfen. Der Hash sichert die Zuordnung des exakten Dateiinhalts, nicht automatisch die vollständige fachliche Richtigkeit des Registerdokuments. Dynamisch erzeugte Dateien können unterschiedliche Byte-Hashes bei identischem fachlichem Inhalt besitzen. Eine logische Dokumentidentität und eine versionierte fachliche Normalisierung sind noch nicht implementiert (C.3.11.4d).
+Dateien nicht unabhängig vom zugehörigen Bericht/Checkpoint umbenennen, verschieben oder inhaltlich verändern. Historische Berichte können relative oder absolute Pfade enthalten. Eine Verzeichnisumstellung darf nicht blind in historischen JSONs umgeschrieben werden; bei Verlagerung auf einen anderen Host ist die Pfadauflösung gesondert zu prüfen. Der Hash sichert die Zuordnung des exakten Dateiinhalts, nicht automatisch die vollständige fachliche Richtigkeit des Registerdokuments. Dynamisch erzeugte Dateien können unterschiedliche Byte-Hashes bei identischem fachlichem Inhalt besitzen. Eine logische Dokumentidentität und eine versionierte fachliche Normalisierung sind noch nicht implementiert (E-04; fachliche Validierung in F-08).
 
-**Aktuelles Größenlimit:** 20 MiB (20.971.520 Bytes), konfigurierbar am Executor-Konstruktor, bislang keine zentrale Ressourcenpolicy für Dateigrößen. Browserdownloads werden erst nach dem Abruf vollständig auf Größe geprüft; bei direkten HTTP-Abrufen wird ein vorhandener `Content-Length` berücksichtigt, aber Playwright kann die Antwort bereits gepuffert haben. Die aktuelle Validierung liest die Datei vollständig ein. Größere Dokumente werden daher im Standardbetrieb abgewiesen; C.3.11.4e soll echtes Streaming, speichereffiziente Prüfung und konfigurierbare Ressourcenbudgets ergänzen. Kein Limit im Produktivcode wurde durch diese Dokumentationsänderung erhöht.
+**Aktuelles Größenlimit:** 20 MiB (20.971.520 Bytes), konfigurierbar am Executor-Konstruktor, bislang keine zentrale Ressourcenpolicy für Dateigrößen. Browserdownloads werden erst nach dem Abruf vollständig auf Größe geprüft; bei direkten HTTP-Abrufen wird ein vorhandener `Content-Length` berücksichtigt, aber Playwright kann die Antwort bereits gepuffert haben. Die aktuelle Validierung liest die Datei vollständig ein. Größere Dokumente werden daher im Standardbetrieb abgewiesen; E-05 soll echtes Streaming, speichereffiziente Prüfung und konfigurierbare Ressourcenbudgets ergänzen. Kein Limit im Produktivcode wurde durch diese Dokumentationsänderung erhöht.
 
 ## 8. Ergebnisverzeichnisse und Datenformate
 
@@ -657,12 +655,12 @@ Auftragsstatus: `running`, `completed`, `failed`, `interrupted`. Ein harter Proz
 | Verfahren | Gegenwärtiger Stand |
 |---|---|
 | Ältere `retry_downloads.py` | CSV-Queue der frühen HTTP-Pipeline; nicht für moderne Crawls. |
-| `ResumePlanner` (C.3.9) | Begrenzte Fortsetzung bekannter Datensätze auf einer Seite nach qualifiziertem Strukturfehler und kompatibler neuer zertifizierter Strategie. |
-| SQLite-Resume (C.3.11.5) | Noch nicht implementiert; Checkpoints können derzeit nur inspiziert werden. |
+| `ResumePlanner` (H-03) | Begrenzte Fortsetzung bekannter Datensätze auf einer Seite nach qualifiziertem Strukturfehler und kompatibler neuer zertifizierter Strategie. |
+| SQLite-Resume (H-03) | Noch nicht implementiert; Checkpoints können derzeit nur inspiziert werden. |
 
 Der existierende ResumePlanner verlangt einen strukturellen Fehler, passende Quelle und neuere zertifizierte aktive Strategie mit kompatiblem Zeilen-/Container-Fix, dieselben Felder und Dokumentregeln, bekannte Schlüssel und höchstens drei Datensätze auf einer Seite. Er prüft bereits gespeicherte Dateien erneut und lädt nur eindeutig `not_attempted` markierte Dokumente. Unklare/fehlgeschlagene Abrufe, Zugriffsbeschränkungen, Serverfehler und beschädigte Dateien blockieren die Wiederaufnahme. Er führt keine allgemeine mehrseitige Wiederaufnahme durch.
 
-C.3.11.5 soll zukünftig SQLite-Aufträge sicher fortsetzen: Strategie und Scope erneut prüfen, Seitenidentitäten abgleichen, bestätigte Dateien erhalten, unklare Zustände gesondert behandeln. Ein allgemeiner `main_execute_async.py --resume <crawl_id>` ist **noch nicht vorhanden**. Die ursprüngliche Planung, unveränderte Seitenidentitäten bis zum Wiederaufnahmepunkt vorauszusetzen, wird durch die datensatzorientierte Planung in Kapitel 16 ersetzt. Der aktuelle Code bleibt bis zur Umsetzung unverändert.
+H-03 soll zukünftig SQLite-Aufträge sicher fortsetzen: Strategie und Scope erneut prüfen, Datensatz- und Dokumentidentitäten abgleichen, Seitenpositionen als Beobachtungen behandeln, bestätigte Dateien erhalten und unklare Zustände gesondert behandeln. Ein allgemeiner `main_execute_async.py --resume <crawl_id>` ist **noch nicht vorhanden**. Die ursprüngliche Planung, unveränderte Seitenidentitäten bis zum Wiederaufnahmepunkt vorauszusetzen, wird durch die datensatzorientierte Planung in Kapitel 16 ersetzt. Der aktuelle Code bleibt bis zur Umsetzung unverändert.
 
 ## 10. Kosten und Benchmark
 
@@ -787,7 +785,7 @@ Der Classifier priorisiert Zugriffs- und Domainschutz vor technischen oder struk
 - `pagination_end_verified`: ein expliziter Endzustand wurde tatsächlich bestätigt.
 - `displayed_results_traversed`: vollständige Verarbeitung der angezeigten Seiten im Vollmodus.
 - `result_limit_detected`: konfigurierter Anbieterhinweis festgestellt (oder nicht/noch unbekannt). Das Nichtfinden eines Hinweises beweist keine unbeschränkte Ergebnismenge.
-- `completeness_verified`: bleibt bis C.3.11.6 im Vollmodus bewusst `false`.
+- `completeness_verified`: bleibt bis F-05 im Vollmodus bewusst `false`.
 - `coverage_status`: z.B. `provider_result_limit`, `displayed_end_reached`, `incomplete`.
 
 Im Unternehmensregister wurde der Hinweis auf eine auf 1.000 Treffer begrenzte Suche beobachtet. Der Crawler erkennt diesen konfigurierten Hinweis im Vollmodus. Selbst alle angezeigten Seiten zu verarbeiten bedeutet nicht, alle tatsächlich vorhandenen Unternehmen erfasst zu haben. Eine vollständige Abdeckung muss über zulässige Datenzugänge und unabhängige Nachweise geklärt werden.
@@ -831,19 +829,18 @@ Für eine neue Domain müssen künftig Aufgabenbeschreibung, Allowlist, Start-UR
 
 ## 14. Aktueller Projektstatus und offene Punkte
 
-| Phase | Stand |
-|---|---|
-| C.3.11.1 – Schema und Endbedingungen | Implementiert; gespeicherte Live-Strategie weiterhin Schema 2. |
-| C.3.11.2 – Mehrseitenvalidierung | Technisch am Unternehmensregister bestätigt, zwei Seiten in zwei Sitzungen; End- und Fachnachweis offen. |
-| C.3.11.3 – Vollständiger Crawl-Modus | Lokal synthetisch getestet, Live-Freigabe gesperrt. |
-| C.3.11.4 – Persistente Checkpoints | Implementiert; lokale SQLite-/Absturztests, keine allgemeine Wiederaufnahme. |
-| C.3.11.4a – Testtrennung | Implementiert, gemeinsame ausführliche Testausgabe. |
-| C.3.11.4b – Pfadverwaltung | Implementiert, konsolidiertes Archiv einschließlich OpenAIClient und Benchmark. |
-| C.3.11.4c – Dynamische Ergebnismengen und stabile Datensatzidentität | Geplant, nächster Schritt. |
-| C.3.11.4d – Dokumentidentität und Versionierung | Geplant. |
-| C.3.11.4e – Speichereffiziente Dokumentenverarbeitung | Geplant. |
-| C.3.11.5 – Seitenübergreifende Wiederaufnahme | Geplant, aufbauend auf C.3.11.4c–e. |
-| C.3.11.6 – Vollständigkeitsprüfung | Geplant. |
+**Implementierungsstand:** Konsolidierter lokaler Pilot. Der fachliche Fortschritt wird ausschließlich anhand der Features A–H und ihrer Storys beschrieben. Die erreichten Meilensteine sind in Kapitel 15 zusammengefasst; die vollständige Story-Zuordnung und Planung stehen in Kapitel 16.
+
+| Feature | Ziel | Erreicht | Aktueller Stand / offene Storys |
+|---|---|---|---|
+| A | API-Anbindung und Verbindungstest | A-01: API-Pilot bestätigt. | Lokal bestätigt; kein neues eigenständiges Arbeitspaket vorgesehen. |
+| B | Token- und Kosten-Tracking | B-01: CSV-Logging; Cached Input und Suchkosten. | Erweiterung vorgeschlagen: B-02 Kosten-/Logvollständigkeit und Zuordnung. |
+| C | KI-gesteuerte Seitennavigation | C-01–C-09: Web Search, Browser, Strategien, Executor, Recovery, Paginierung und Vollmodus. | In Entwicklung: C-10 dynamische Navigation, C-11 Generalisierung. |
+| D | Strukturierte Datenextraktion | D-01–D-02: JSON-Pilot und deterministische Feldextraktion. | Wieder geöffnet: D-03 stabile Identität, D-04 Extraktionsgeneralisierung. |
+| E | Dokumentensuche und Download | E-01–E-03: HTTP-/Browserdownload und Download-Pacing. | Wieder geöffnet: E-04 Dokumentidentität, E-05 Streaming, E-06 weitere Quellen. |
+| F | Qualitätsprüfung und Halluzinationskontrolle | F-01–F-03, F-07: Klassifikation, Zertifikate, Mehrseitenprüfung und Testsystem. | In Entwicklung: F-04 dynamische Validierung, F-05 Vollständigkeit, F-08 fachliche Qualität; F-06 zurückgestellt. |
+| G | Modellvergleich und Kostenbenchmark | G-01–G-02: Baseline, historischer Benchmark. | Teilweise umgesetzt: G-03 Modellvergleich, G-04 Gesamtkosten offen. |
+| H | AWS-Integration | H-01–H-02: lokale Persistenz und Pfade als technische Vorarbeiten; H-03 begrenzter ResumePlanner. | Wiederaufnahme, Auftragsverwaltung und Cloud-Pilot offen; kein AWS-Deployment. |
 
 Vor dem Live-Vollbetrieb fehlen weiterhin: explizite und überprüfte Endregel, vollständige unabhängige Paginierungsreferenz, Nachweis späterer Downloads, aktivierte und passende Strategie, tatsächliche Providerfreigabe, SQLite-Wiederaufnahme und abschließende Abdeckungsprüfung. Die vorhandene Suchbegrenzung ist gesondert zu berücksichtigen. Die aktuelle Full-Crawl-Preflight-Implementierung verlangt eine Referenz mit bestätigtem Endzustand; der vorhandene Validator beschränkt sich auf zwei bis drei Seiten. Das ist für den aktuellen größeren Suchumfang eine offene Validierungslücke.
 
@@ -851,203 +848,136 @@ Technische Altlasten: Drei ältere Tests benötigen explizite Fixture-Argumente;
 
 ### Quellenbasis und Dokumentationsumfang
 
-Grundlage der Beschreibung des implementierten Codes ist das konsolidierte Archiv `KI_Crawler_src_C3114b.zip`: 48 Python-Dateien, vorhandene JSON-/CSV-/Originaldateien, Manifest, Strategie und Referenzen sowie `README_C3114b.md` und `README_SRC_C3114b.md`. Die entpackten Dateien wurden mit dem Archivinhalt abgeglichen. Die CLI-Referenz ist aus den `argparse`-Definitionen und Implementierungen abgeleitet. Die Beispiele sind teilweise zustandsändernd und ausdrücklich als bedingte Aufrufe gekennzeichnet; für diese Dokumentation wurden keine Live-Crawls, API-Aufrufe oder neuen Tests ausgeführt. Der Repository-Root ist nicht im ursprünglichen Archiv enthalten. Die Projektkonfiguration `pyproject.toml` dient als Grundlage der Installationsanleitung. `uv.lock` ist Bestandteil des Git-Repositorys und wird gemeinsam mit `pyproject.toml` versioniert. Die alternative `requirements.txt` wird künftig aus der Lockdatei exportiert. Die Installation der aufgeführten Paketversionen wurde für diese Dokumentationsänderung nicht ausgeführt. Das Handbuch verändert weder Quellcode noch vorhandene Betriebsdaten.
+Grundlage der Beschreibung des implementierten Codes ist der konsolidierte lokale Quellcode: 48 Python-Dateien, vorhandene JSON-/CSV-/Originaldateien, Manifest, Strategie und Referenzen sowie die begleitenden technischen Dokumentationen. Die entpackten Dateien wurden mit dem Archivinhalt abgeglichen. Die CLI-Referenz ist aus den `argparse`-Definitionen und Implementierungen abgeleitet. Die Beispiele sind teilweise zustandsändernd und ausdrücklich als bedingte Aufrufe gekennzeichnet; für diese Dokumentation wurden keine Live-Crawls, API-Aufrufe oder neuen Tests ausgeführt. Der Repository-Root ist nicht im ursprünglichen Archiv enthalten. Die Projektkonfiguration `pyproject.toml` dient als Grundlage der Installationsanleitung. `uv.lock` ist Bestandteil des Git-Repositorys und wird gemeinsam mit `pyproject.toml` versioniert. Die alternative `requirements.txt` wird künftig aus der Lockdatei exportiert. Die Installation der aufgeführten Paketversionen wurde für diese Dokumentationsänderung nicht ausgeführt. Das Handbuch verändert weder Quellcode noch vorhandene Betriebsdaten.
 
-## 15. Vollständige Projekthistorie
+## 15. Erreichte Meilensteine
 
-Dieses Kapitel ist das fortlaufende Entwicklungsprotokoll seit Projektbeginn. Es dokumentiert die tatsächlich verfolgten Phasen, die Gründe für Architekturänderungen, nachgewiesene Ergebnisse und noch offene Punkte. Historische Nummerierungen werden beibehalten; eine implementierte Komponente ist nicht automatisch für den Live-Vollbetrieb freigegeben. Die Zahlen sind historische Messwerte bzw. berichtete Testresultate, keine neu ausgeführten Tests und keine Produktions-SLA.
+Die Meilensteine fassen wesentliche nachgewiesene Projektergebnisse zusammen und verweisen auf die zugehörigen Storys. Sie sind keine zusätzlichen Arbeitspakete. Die vollständige fachliche Zuordnung, Status und offenen Anforderungen werden ausschließlich in Kapitel 16 geführt.
 
-### 15.1 Projektstart und ursprüngliche Planung (26. November 2026)
+| Meilenstein | Zugehörige Storys | Ergebnis / Nachweis | Grenze des Nachweises |
+|---|---|---|---|
+| API-Anbindung und Kostenmessung | A-01, B-01 | Erfolgreiche Responses-API-Anbindung; CSV-Logging mit Crawl-ID, Tokenverbrauch, Cached Input, Suchanfragen und Kosten. | API-Kosten getrennt vom ChatGPT-Abonnement; mindestens ein protokollierter Kostenwert unvollständig. |
+| Interaktive Registersuche und Dokumentenbeschaffung | C-01, C-02, D-01, E-02 | Web Search erprobt; Browsersteuerung ermöglicht die interaktive Registersuche und den Abruf eines CD/PDF und SI/XML. | Web Search allein konnte die interaktive Registersuche nicht bewältigen. Keine allgemeine Extraktions- oder Abrufgarantie. |
+| Wiederverwendbare Strategien und deterministische Ausführung | C-03–C-06, D-02, G-01 | Schema, KI-gestützte Discovery, versionierter StrategyStore und deterministischer Executor implementiert. Ein Unternehmen mit zwei Dokumenten in 8,472 s ohne LLM-Aufrufe statt 63,589 s und 17 LLM-Aufrufen im agentischen Referenzlauf. | Vergleich zweier konkreter Pilotläufe; kein statistisch allgemeiner Durchsatznachweis. |
+| Asynchrone Ausführung mit kontrollierter Parallelität | C-07, E-02, F-01 | Sequenzieller Live-Test mit drei Unternehmen, 6/6 Dokumenten in 17,470 s und ohne LLM-Aufrufe. HTTP-500-Fehler als `SERVER_ERROR` klassifiziert. | Drei parallele Live-Versuche lieferten 4/6, 4/6 und 1/6 Dokumenten; Ursache nicht abschließend nachgewiesen. Domain-Policy bleibt bei einem Worker. |
+| Kontrollierte Recovery und Strategiefreigabe | C-08, F-01, F-02, H-03 | Lokale Strukturprüfung und begrenzte Strategiereparatur; hash-gebundene Validierungszertifikate, Aktivierung/Rollback und begrenzter einseitiger ResumePlanner. Strategie 1 validiert. | Strategie 1 nicht aktiviert; kein realer adaptiver End-to-End-Nachweis. Allgemeine SQLite-Wiederaufnahme offen. |
+| Mehrseitige technische Validierung | C-09, F-03 | Zwei unabhängige Live-Sitzungen mit jeweils zwei Seiten, 60 eindeutigen Unternehmen und 120 geprüften Dokumenten-Steuerelementen; gleiche stabile Seiten-Hashes. Laufzeiten 8,319 s und 9,337 s, insgesamt 17,668 s; keine LLM-Aufrufe. | Gesamtstatus `partial`: keine unabhängige vollständige Referenz, kein terminaler Endzustand und keine späteren Dokumentendownloads geprüft. Anbieterhinweis auf maximal 1.000 Treffer. |
+| Lokaler vollständiger Crawl und stabilisierte Downloads | C-09, E-02, E-03 | Drei synthetische Seiten, sieben Unternehmen und 14/14 Dokumente; Download-Pacing von 250 ms pro Worker; 12/12 Tests berichtet und erfolgreicher Testlauf beim Nutzer bestätigt. | Chromium-Burst-Begrenzung ist eine plausible, nicht direkt instrumentierte Erklärung. Keine Freigabe für vollständige Live-Abrufe. |
+| Persistenter Auftragsfortschritt | H-01 | SQLite je Auftrag, Commit vor Download, Datei- und Hashprüfung vor Erfolgsstatus, lesende Fortschrittsabfrage; 21/21 Tests berichtet einschließlich hartem Prozessabbruch und Speicherausfalltest. | Kein Stromausfalltest; keine allgemeine seitenübergreifende Wiederaufnahme. |
+| Einheitliches Testsystem | F-07 | Benannte Testfälle, OK/NICHT-OK-Statistik, zentrale Test-CLI und getrennte Testverzeichnisse; 13/13 ausgewählte Tests nach der Verzeichnistrennung berichtet. | Drei ältere Testmodule benötigen weiterhin explizite Strategie-Fixtures; vollständige Regression offen. |
+| Konsolidierte Projektstruktur und Benchmark | H-02, G-02, B-01 | Zentrale Pfade, getrennte Ergebnisverzeichnisse, OpenAIClient-Logging angepasst. 95 ursprüngliche Datendateien per SHA-256 unverändert, darunter 50 Originaldokumente; 22 Benchmark-Runs und 138 API-Nutzungsdatensätze vor/nach Migration gleich. 60/60 ausgewählte Tests und Syntaxprüfung aller 48 Python-Dateien berichtet. | Kein erneuter Live-Crawl oder kostenpflichtiger API-Test; vollständige historische Regression offen. |
 
-Ausgangspunkt war ein KI-Crawler, der über eine API konkrete Crawling-Aufträge erhält, strukturierte Daten aus öffentlich zugänglichen Webseiten liefert und zugehörige Originaldokumente beschafft. Der lokale Pilot sollte die technische und wirtschaftliche Grundlage für einen späteren AWS-Crawler schaffen. Die Abrechnung der API-Nutzung muss getrennt vom ChatGPT-Abonnement betrachtet und für jeden Auftrag nachvollziehbar sein.
+### 15.1 Messbare Ergebnisse
 
-In einem frühen Architekturentwurf wurden API-POC, Single-Page-Extraktion, agentisches Crawling, Dokumentenabruf, Benchmarking und AWS als sechs grobe Phasen A–F zusammengefasst. Im anschließend tatsächlich verfolgten Entwicklungsplan wurde diese Gliederung zu A–H verfeinert. Die folgende Tabelle verwendet diese zweite, operative Nummerierung, um gleichnamige Phasen nicht zu verwechseln.
-
-| Phase | Ursprüngliches Ziel | Erreicht / heutige Zuordnung |
-|---|---|---|
-| A | API-Anbindung und Verbindungstest | Erfolgreich durch den Nutzer bestätigt; OpenAI Responses API als Grundlage. |
-| B | Token- und Kosten-Tracking | Implementiert; schlankes CSV-Logging statt separater komplexer Tracking-/Pricing-Architektur. |
-| C | KI-gesteuerte Seitennavigation | Web Search, Browser-Automatisierung und später adaptive, wiederverwendbare Strategien (C.1–C.3); Generalisierung folgt in C.4. |
-| D | Strukturierte Datenextraktion | Erste Extraktionstests erfolgreich; heute Schema, deterministische Feldregeln und Validierung. Generische fachliche Qualität über mehrere Domains noch offen. |
-| E | Dokumentensuche und Download | E.1 direkter Download, E.2 sitzungsgebundener Browserdownload; vollständige Live-Abdeckung und größere Dateien noch offen. |
-| F | Qualitätsprüfung und Halluzinationskontrolle | Teilweise in C.3.2, C.3.7–9 und C.3.11 umgesetzt; fachliche Abdeckung, adaptive End-to-End-Tests und weitere Domains noch offen. |
-| G | Modellvergleich und Kostenbenchmark | Historischer API-/Laufzeitbenchmark C.3.10 implementiert; systematischer Modellvergleich und umfassende Qualitäts-/Kostenoptimierung noch offen. |
-| H | AWS-Integration | Weiterhin geplant; heute C.5–C.7 (Persistenz, Cloud und Gesamtkosten). |
-
-### 15.2 Frühe Pilotversuche – A, B, C.1, D, E.1 (26.–27. November 2026)
-
-| Schritt | Implementierung, Erkenntnis und Ergebnis | Verbleibende Grenze |
-|---|---|---|
-| A – API Proof of Concept | Erste API-Anbindung und erfolgreiche Anfragen; Verbindungstest vom Nutzer bestätigt. | Kein vollständiger Crawl oder Cloud-Betrieb. |
-| B – Nutzungs-/Kostenlogging | Erstes Paket mit `UsageTracker.py`, `pricing.json`, `OpenAIClient.py` und Tests. Auf Nutzerwunsch vereinfacht: CSV pro API-Aufruf, später Cached Input und Suchkosten separat. Heute in `OpenAIClient.py`. | Historische Logformate unterscheiden sich; mindestens ein Kostenwert unvollständig. |
-| C.1 – Web Search | KI recherchiert öffentlich zugängliche Seiten und Dokumentlinks. Reale Suchanfragen und Linkfindung erprobt. | Interaktive Registersuche konnte mit Web Search keine Unternehmen extrahieren. |
-| D – Strukturierte Extraktion | Strukturierte Antworten/JSON und Extraktion gefundener Daten; ältere Ergebnisse heute unter `results/executions/legacy/`. | Kein Beleg einer allgemeinen fehlerfreien Extraktion beliebiger Webseiten. |
-| E.1 – Statische Dokumente | Direkte HTTP-Downloads und Download-Protokollierung. Erster Test: 4 von 10 Downloads erfolgreich, sechs `ConnectionResetError`. `DocumentDownloader.py`, CSV-Queue und Retry/Backoff ausgebaut. | Der heutige Legacy-Downloader hat eine offene `file_type`-Inkonsistenz; kein Ersatz für den modernen Executor. Kein Nachweis, dass alle damaligen Fehler abschließend beseitigt wurden. |
-
-Die Entscheidung für eine einfache CSV statt umfangreicher Abstraktionen war bewusst: zunächst tatsächliche Kosten und technische Machbarkeit messen. Die frühen Web-Search-/Download-Experimente zeigten, dass Linkfindung allein nicht genügt, wenn ein Anbieter dynamische Sitzungen und interaktive Suchmasken verwendet.
-
-### 15.3 C.2 und E.2 – Browserbasierter Pilot und sitzungsgebundene Dokumente (27. November 2026)
-
-`BrowserUse.py` und `main_browser.py` verbanden lokale Playwright-Browsersteuerung mit den Funktionsaufrufen des OpenAI-Modells. Der Agent konnte DOM-Zustände untersuchen, Formularfelder und Filter bedienen und im Browser erzeugte Dokumente übernehmen. Für das Unternehmensregister wurden Hamburg, Amtsgericht Hamburg und HRB als konkrete Pilotparameter gewählt. Ein chronologischer Abdruck (CD/PDF) und ein strukturierter Registerinhalt (SI/XML) konnten in einem begrenzten Browserlauf beschafft werden.
-
-Damit war die grundsätzliche Machbarkeit für interaktive Registerinformationen nachgewiesen. Der Ansatz hatte jedoch einen entscheidenden Nachteil: bei jedem einzelnen Navigationsschritt erneut eine KI anzufragen verursachte Zeit- und API-Kosten, obwohl sich die meisten Arbeitsschritte wiederholen. Daraus entstand C.3: KI nur für die Entdeckung bzw. begrenzte Reparatur der Strategie verwenden und bekannte Aufträge deterministisch ausführen.
-
-### 15.4 C.3.1–C.3.5 – Von der Baseline zur deterministischen Strategie
-
-| Phase | Implementierung und Ergebnis | Status / offene Grenze |
-|---|---|---|
-| C.3.1 – Baseline und Messinstrumentierung | `BrowserUse.measure`/Timing-CSV; ein agentischer Referenzlauf mit einem Unternehmen und zwei Dokumenten. 63,589 s Gesamtlaufzeit, 17 LLM-Aufrufe, 45,149 s LLM-Zeit. | Live-Pilot nachgewiesen; kein allgemeiner Durchsatztest. |
-| C.3.2 – StrategySchema | JSON-Schema für Parameter, Navigation, Selektoren, Extraktion, Schlüssel, Dokumente und Paginierung; lokale Schema-Prüfung. | Implementiert; Schema später erweitert (v2/v3). |
-| C.3.3 – KI-gestützte Strategy Discovery | `main_discovery.py`, `BrowserUse.py`; wiederverwendbare Regeln statt einmaliger Ergebnisse. Mehrere Discovery-Läufe v1/v2/v2.1; dynamische Locator-Namen, geprüfte Geschwisterzeilen und Regex für Registerdaten. | Strategie für Unternehmensregister gewonnen; endgültige Seite noch nicht live geprüft. |
-| C.3.4 – Versionierter StrategyStore | Lokale Versionen, Manifest, Hashes, Locks, atomare Schreibvorgänge, Kandidaten und Aktivierung. Import vorhandener Strategie ohne API-Aufruf. | Implementiert; später um gebundene Zertifikate ergänzt. |
-| C.3.5 – Synchroner deterministischer Executor | `StrategyExecutor.py`, `main_execute.py`; Parameter-, Domain-, Feld- und Dokumentenprüfung, Cookie-/Menübehandlung und seitenbezogene Extraktion. | Live: Metadaten eines Unternehmens in 3,880 s; ein Unternehmen inkl. 2/2 Dokumenten in 8,472 s, jeweils 0 LLM-Aufrufe. Historische synchrone CLI ist nicht der bevorzugte Freigabepfad. |
-
-Der direkte Vergleich der beiden Ein-Unternehmen-/Zwei-Dokumente-Läufe (63,589 s agentisch gegenüber 8,472 s deterministisch) ergibt rund Faktor 7,51 bzw. 86,7 % weniger Laufzeit. Dies ist ein Vergleich zweier konkreter Läufe, kein allgemeiner statistischer Geschwindigkeitsnachweis. Die einmaligen Discovery-/Validierungskosten sind gesondert zu betrachten.
-
-### 15.5 C.3.6–C.3.9 – Asynchronität, Fehlerklassifikation und adaptive Strategiepflege
-
-| Phase | Implementierung und Ergebnis | Status / offene Grenze |
-|---|---|---|
-| C.3.6 – Asynchroner Worker-Pool | `AsyncStrategyExecutor.py`; asyncio-Queue, getrennte Tabs bei mehreren Workern, Identitätsprüfung, kontrollierter Abbruch und Netzwerkdiagnostik. | Sequenzieller Live-Test: 3 Unternehmen, 6/6 Dokumente, 17,470 s, 0 LLM-Aufrufe. Parallelbetrieb des Unternehmensregisters nicht zuverlässig. |
-| C.3.7 – Fehlerklassifizierung | `ErrorClassifier.py`; lokale Klassifikation von Zugriff, Server-/Netzwerk-, Download-, Validierungs-, Interaktions- und möglichen Strukturfehlern. | Live-Fehler HTTP 500 als `SERVER_ERROR` klassifiziert, keine KI-Reparatur/automatische Wiederholung. |
-| C.3.8 – Recovery und kontrollierte Strategiereparatur | `RecoveryManager`, `StructureVerifier`, `StrategyRepair`, `ExecutionPolicy`; nur nachgewiesene Strukturänderungen, geprüfte Locator-Alternativen, maximal ein KI-Reparaturversuch je Quellversion; neue Kandidaten. | Lokal mit Mocks und synthetischen Seiten getestet; kein realer adaptiver Reparatur-End-to-End-Nachweis. |
-| C.3.9 – Strategievalidierung und Versionierung | `StrategyValidator`, `ResumePlanner`, `main_strategy`; unabhängige Referenz, getrennte Sitzungen, Dokumentstichprobe, hash-gebundenes Zertifikat, Aktivierung und Rollback mit Zustandsprüfung. | Im konsolidierten Store ist Version 1 validiert, nicht aktiviert. Wiederaufnahme nur für begrenzten bekannten einseitigen Scope, nicht für SQLite-Vollaufträge. |
-| C.3.9.1–C.3.9.3 – Erweiterte adaptive Tests | Simulator, automatisierte Fehlerszenarien und vollständiger adaptiver End-to-End-Test vorgeschlagen. | Bewusst zurückgestellt vor C.3.10; weiterhin offen. |
-
-**Entscheidung zur Parallelität:** Drei dokumentierte Live-Versuche mit zwei Workern lieferten 4/6, 4/6 und 1/6 Dokumenten (0 von 3 vollständig erfolgreich). Beim letzten Versuch wurde eine HTTP-500-Fehlerseite festgestellt, während ein bereits gestarteter Download des anderen Workers noch fertig wurde. Die Ursache der Serverfehler ist nicht abschließend nachgewiesen; eine Parallelitätsbeschränkung des Anbieters wird nicht als bewiesene Ursache behauptet. Die Domain-Policy bleibt deshalb bei einem Worker. Weitere parallele Live-Tests sind nicht vorgesehen, solange keine neuen belastbaren Voraussetzungen vorliegen.
-
-### 15.6 C.3.10 – Benchmarking und Kostenanalyse
-
-`BenchmarkAnalyzer.py`, `main_benchmark.py` und `test_benchmark.py` ermöglichen eine Offline-Auswertung von Execution-, Discovery-, Recovery- und Validierungsberichten sowie Timing- und Usage-Logs. Die Baseline wird über eine dokumentierte Crawl-ID zugeordnet; unbekannte Kosten werden nicht als kostenlos behandelt. Spätere Verbesserungen unterstützen historische CSV-Zeilenformate und vermeiden Doppelzählungen.
-
-| Historische Messung | Wert |
+| Messgröße | Wert |
 |---|---:|
 | Agentische Baseline (1 Unternehmen, 2 Dokumente) | 63,589 s / 17 LLM-Aufrufe |
-| Synchroner Crawl (1 Unternehmen, 2 Dokumente) | 8,472 s / 0 LLM-Aufrufe |
+| Davon LLM-Zeit | 45,149 s |
+| Synchroner deterministischer Crawl (1 Unternehmen, 2 Dokumente) | 8,472 s / 0 LLM-Aufrufe |
+| Beschleunigung im konkreten Vergleich | 7,51-fach bzw. 86,7 % weniger Laufzeit |
 | Asynchroner sequenzieller Crawl (3 Unternehmen, 6 Dokumente) | 17,470 s / 0 LLM-Aufrufe |
-| API-Nutzungsdatensätze im später konsolidierten Bestand | 138 |
+| Benchmark-Runs im konsolidierten Bestand | 22 |
+| API-Nutzungsdatensätze | 138 |
 | Input / Cached Input / Output-Tokens | 4.585.406 / 3.641.750 / 53.839 |
 | Gesamt-Tokens | 4.639.245 |
 | Web-Suchanfragen | 21 |
 | Bekannte protokollierte API-Kosten | 0,25848560 USD |
 
-Der konsolidierte Benchmark C.3.11.4b enthält 22 Runs. Der historische Kostenwert ist unvollständig und umfasst keine AWS-/Infrastrukturkosten. Ein systematischer Modellvergleich bleibt offen. Die ursprünglichen Logs werden nicht nachträglich verändert.
+Die Messungen betreffen unterschiedliche Auftragsumfänge und sind nicht ohne Weiteres miteinander vergleichbar. Discovery- und Validierungskosten sind von der deterministischen Ausführung getrennt zu betrachten. Die Kostenangabe ist unvollständig und enthält keine AWS-Infrastrukturkosten. Testzahlen sind berichtete Nachweise aus früheren Testläufen, nicht additiv und nicht für diese Dokumentationsaktualisierung erneut erhoben.
 
-### 15.7 C.3.11.1 und C.3.11.2 – Mehrseitige Ergebnisse und Paginierungsvalidierung
+## 16. Feature-basierte Entwicklungsroadmap
 
-Nach erfolgreichen begrenzten Downloads wurde die Anforderung erweitert: Der Crawler soll grundsätzlich alle zum Auftrag gehörenden angezeigten Seiten und Dokumente verarbeiten können, nicht nur eine manuell vorgegebene Stichprobe.
+### 16.1 Regeln für die Roadmap
 
-| Schritt | Erreicht | Nachweis / Grenze |
+A–H sind Features, keine zwingend nacheinander auszuführenden Phasen. Jede Story hat eine stabile ID, einen führenden fachlichen Bereich, einen Status, Abhängigkeiten und Abnahmekriterien. Neue Anforderungen werden in ihrem Feature ergänzt, auch wenn es früher bereits abgeschlossen war. Gemeinsame Module dürfen von mehreren Storys geändert werden, die Verantwortlichkeit richtet sich nach dem Ziel der Story. Die nächste Umsetzung ergibt sich aus Priorität und Abhängigkeiten, nicht aus dem Buchstaben des Features.
+
+B-02, die weitere Modellvergleichsplanung (G-03) und die detaillierten Abnahmen sind aus vorhandenen offenen Punkten abgeleitete Planungsvorschläge; sie sind keine zusätzliche beschlossene Freigabe. Lokale Persistenz und Projektstruktur werden als Infrastrukturvorarbeiten H zugeordnet, Testsystem und Regression F.
+
+Status: **erreicht** = in dem dokumentierten Scope nachgewiesen; **teilweise** = implementierte Anteile, offene Nachweise oder Erweiterungen; **offen** = noch nicht implementiert; **zurückgestellt** = bewusst nicht im unmittelbaren Umsetzungspfad. Die detaillierten Story-Abnahmen sind Planungsvorschläge. Feature-Abschluss ist nicht gleichbedeutend mit einer Betreiberfreigabe. Erreichte Meilensteine und Messwerte sind Kapitel 15 zu entnehmen.
+
+### 16.2 A – API-Anbindung und Verbindungstest
+
+| Story | Status | Ziel / Abnahme |
 |---|---|---|
-| C.3.11.1 – Schema und Endbedingungen | Schema v3 mit explizitem Endmarker oder deaktiviertem Vorwärtslink; unbestätigtes Ende von bestätigtem Ende getrennt; Prüfung von Seitenwechsel und Schlüsseln. | Lokal getestet; gespeicherte Live-Strategie bleibt Schema 2 ohne Endregel. |
-| C.3.11.2 v1 – Mehrseitenvalidator | Zwei unabhängige Sitzungen, Referenzdatensätze, vollständige Seitenproben, Prüfung von Download-Steuerelementen und optionalem späterem Download. | Begrenzung auf 2–3 aufeinanderfolgende Seiten; unabhängige Referenz muss vollständig sein. |
-| C.3.11.2 v2 – Technischer Modus | `--technical-only`, `--pages`; technische Prüfung ohne manuell ausgefüllte fachliche Referenz. | Erster Live-Versuch scheitert an blockiertem HRB-Klick; 0 Unternehmen. |
-| C.3.11.2 v3 – Menüinteraktion | Bundesländer-Menü nach Auswahl schließen und Zustand verifizieren; keine erzwungenen Klicks. | Live: 30 Unternehmen, 60 geprüfte Dokumenten-Controls auf Seite 1; Weiter-Link mehrdeutig. |
-| C.3.11.2 v4 – Gleichwertige Paginierungslinks | Nur nachweislich gleichwertige sichtbare Links mit identischem Ziel und Zustand zusammenfassen. | Live: zwei unabhängige Sitzungen mit je 2 Seiten, 60 eindeutigen Unternehmen und 120 geprüften Controls; identische stabile Seiten-Hashes, 0 Downloads und 0 LLM-Aufrufe. |
+| A-01 – API-Pilot | Erreicht | Erfolgreiche Responses-API-Anbindung und Verbindungstest. |
 
-Der erfolgreiche Report `ed551293-0bfd-4583-9238-35876704b810_pagination_validation.json` dokumentiert 8,319 s bzw. 9,337 s pro Sitzung, insgesamt 17,668 s. Die technische Prüfung ist bestanden, der Gesamtstatus bleibt `partial`: kein terminaler Endzustand, keine vollständige unabhängige Paginierungsreferenz, keine Downloads auf späterer Seite, keine Full-Crawl-Freigabe. Die beobachtete Suche zeigt 34 Seiten und einen expliziten Hinweis auf maximal 1.000 Treffer; die letzten Seiten wurden nicht dadurch bereits verifiziert.
+Keine neue eigenständige Story im aktuellen Backlog. Bei einer später notwendigen Änderung am API-Vertrag wird A wieder geöffnet; Cloud-Deployment gehört zu H-05, Kostenlogging zu B.
 
-Die damalige Übereinstimmung der Seiten-Hashes ist ein positiver Messbefund für diese beiden Sitzungen. Sie ist kein Nachweis einer dauerhaft unveränderlichen Ergebnismenge. Dieser Unterschied motiviert C.3.11.4c.
+### 16.3 B – Token- und Kosten-Tracking
 
-### 15.8 C.3.11.3 – Vollständiger Crawl-Modus und Download-Stabilisierung
-
-`FullCrawl.py` und die erweiterte asynchrone CLI führen `--all-results`, `--plan-only`, ganze Seiten als Verarbeitungseinheit, Sicherheitsobergrenzen und einen konfigurierbaren Anbieter-Begrenzungshinweis ein. Der Planmodus prüft die Freigabevoraussetzungen ohne Browserstart. Die Verarbeitung aller angezeigten Seiten ist nicht gleichbedeutend mit fachlicher Vollständigkeit; `completeness_verified` bleibt bis zur abschließenden Prüfung `false`.
-
-| Version | Anlass und Änderung | Ergebnis |
+| Story | Status | Ziel / Abnahme |
 |---|---|---|
-| C.3.11.3 v1 | Vollständigen Crawl und Preflight implementiert. | Lokal 3 Seiten, 7 Unternehmen, 14/14 Dokumente; beim Nutzer sporadischer Download-Timeout. |
-| C.3.11.3 v2 | Test-Timeout von 4 auf 15 s erhöht, DOM-Download-Link/MIME-Typ und Fehlerdiagnose verbessert; Negativtest ergänzt. | Lokal erfolgreich; beim Nutzer weiterhin Ausfall beim 11. Download nach 10 erfolgreichen Abrufen. |
-| C.3.11.3 v3 | Aufgrund dokumentierter Chromium-Download-Burst-Begrenzung 250 ms Mindestabstand pro Worker nach abgeschlossenem Download, Timing `download_pacing`. | 12/12 lokale Tests einschließlich aller 14 Downloads berichtet; Nutzer bestätigt erfolgreichen Testlauf. |
+| B-01 – Nutzungs- und Kostenlogging | Erreicht im Pilot | CSV je API-Aufruf mit Input, Cached Input, Output, Web Search und Kosten; eindeutige Crawl-ID. |
+| B-02 – Kosten-/Logvollständigkeit und Zuordnung | Offen (Vorschlag) | Verbrauch, Kostenquelle, Zeitpunkt und Auftrags-/Run-ID nachvollziehbar speichern; unbekannte Preise/Kosten ausdrücklich unbekannt lassen. |
 
-Chromium-Ratenbegrenzung ist eine durch Fehlerbild und Quellcode gestützte Erklärung, kein direkt instrumentierter Nachweis im konkreten Browserprozess. Die erfolgreiche Korrektur bleibt im produktiven asynchronen Executor. Anbieterspezifische Limits werden dadurch nicht ersetzt. Der vollständige Live-Crawl bleibt gesperrt.
+B-02 ergänzt den vorhandenen Logger, ohne historische Zeilen umzuschreiben. Abrechnungsversion und fehlende Werte dokumentieren; Erfolg/Fehler und mehrfache Aufrufe eindeutig zuordnen. Tests für fehlende Kostendaten, Cached Input, Suchkosten und unterschiedliche Logformate; G-02 bleibt für die Auswertung zuständig. Die Erfassung zusätzlicher Infrastrukturmesswerte erfolgt in Zusammenarbeit mit H-05 und G-04. Keine aktuellen Preise in dieser Planung festschreiben.
 
-### 15.9 C.3.11.4–C.3.11.4b – Persistenz, Tests und Konsolidierung
+### 16.4 C – KI-gesteuerte Seitennavigation
 
-| Phase / Teilaufgabe | Erreichte Funktionen und Entscheidungen | Nachweis / offene Grenze |
+| Story | Status | Ziel / Abnahme |
 |---|---|---|
-| C.3.11.4 – SQLite-Checkpoints | Eine DB je Auftrag; Commit vor Download, endgültiger Status nach Datei-/Hashprüfung, Fortschritt je Seite und Dokument; Read-only-Inspector. | 21/21 Tests berichtet, einschließlich hartem Prozessabbruch und Speicherausfall vor dem Download. Kein Stromausfalltest, keine mehrseitige Resume-Funktion. |
-| Gemeinsamer TestRunner | Testnamen und Ergebnisse während der Ausführung; explizite OK/NICHT-OK-Anzahl, Tracebacks und zentrale Test-CLI. | Runner-, SQLite- und ein Browser-Test: 13/13 berichtet. |
-| C.3.11.4a – Testtrennung | Alle `test_*.py`, `TestRunner.py`, `main_tests.py` nach `src/tests/`; Produktivcode `src/crawler/`, direkte Imports, Working Directory `src`. | Testprozess-Importpfade und separater Absturzprozess angepasst; 13/13 ausgewählte Tests berichtet. Drei alte Module benötigen weiterhin Fixture-Argumente. |
-| C.3.11.4b – Pfadverwaltung | `ProjectPaths.py`, strukturierte Results-Ordner, separate Originaldokumente, Strategien und Referenzen; Dry-Run-Migration und Benchmark-Kompatibilität. | 36/36 ausgewählte Tests im ersten Änderungspaket berichtet; anschließend Konsolidierung mit tatsächlichem `src.zip`. |
-| C.3.11.4b – Konsolidiertes src | Aktueller OpenAIClient und alter Downloader an zentrale Pfade angepasst; Legacy-Reports separat, Queue unter Checkpoints, Benchmark neu berechnet. | 95 ursprüngliche Datendateien per SHA-256 unverändert, darunter 50 Originaldokumente; 22 Benchmark-Runs und 138 API-Nutzungsdatensätze vor/nach Migration gleich. 60/60 ausgewählte Tests und Syntaxprüfung aller 48 Python-Dateien berichtet. |
-| Dokumentation und Installation | Technisches Handbuch, Roadmap, Installationsanleitung aus `pyproject.toml`, alternative `requirements.txt`; `uv.lock` wird im Repo versioniert, README im Root. | Dokumentiert; Neuinstallation und vollständige historische Regression nicht erneut durchgeführt. |
+| C-01 – Web Search | Erreicht im Pilot | Öffentliche Quellen und Links ermitteln; Grenzen interaktiver Masken dokumentiert. |
+| C-02 – Browserautomatisierung | Erreicht im Pilot | Formulare, Filter, Ergebnisnavigation mittels Playwright. |
+| C-03 – StrategySchema | Erreicht | Versionierter Vertrag für Navigation und Extraktion, lokale Schema-Prüfung. |
+| C-04 – Strategy Discovery | Erreicht im Pilot | Wiederverwendbare Regeln durch KI gewinnen. |
+| C-05 – StrategyStore | Erreicht | Versionierung, atomare Speicherung, Aktivierungsmechanik; F-02 liefert Zertifizierung. |
+| C-06 – Synchroner Executor | Erreicht im Pilot | Deterministische Ausführung ohne weitere LLM-Aufrufe. |
+| C-07 – Asynchroner Worker-Pool | Teilweise | Sequenzieller Betrieb bestätigt; Parallelbetrieb nur bei geeigneten Bedingungen und Freigabe. |
+| C-08 – Kontrollierte Recovery | Teilweise | Begrenzte Reparatur nach nachgewiesener Strukturänderung; F-06 für End-to-End-Nachweis offen. |
+| C-09 – Paginierung, Endregel und Vollmodus | Teilweise | Expliziter Endvertrag und `--all-results` lokal; zwei Seiten live technisch bestätigt, End-/Freigabenachweis offen (F-03/F-05). |
+| C-10 – Dynamische Navigation | Offen | Seitenwechsel trotz beweglicher Treffer; Fortschritt und echte Schleifen erkennen. |
+| C-11 – Generalisierung der Navigation | Offen | Weitere geeignete Zielwebseiten über generische Strategie und isolierte Adapter. |
 
-### 15.10 Neue Erkenntnisse vor der Wiederaufnahme (28. November 2026)
+#### C-10 – Dynamische Navigation
 
-Die bisherige Implementierung verwendet seitenbezogene Signaturen, eindeutige Schlüssel mit Firmennamen, binäre Dokument-Hashes und ein Standard-Dateigrößenlimit von 20 MiB. Diese Mechanismen haben den bisherigen Pilot abgesichert, genügen aber nicht als dauerhafte Grundlage für dynamische Datenbestände. Drei neue Arbeitspakete wurden deshalb vor C.3.11.5 aufgenommen:
+Abhängigkeiten: D-03 (Identität) und die gemeinsam mit F-04 abgestimmten Navigations-/Validierungsverträge. H-01 stellt die vorhandene Persistenz bereit; notwendige Schemaerweiterungen für Sichtungen werden mit H-03 abgestimmt. Eine bereits implementierte Wiederaufnahme ist keine Voraussetzung für C-10. Seiten-Hashes als kurzfristige Navigationsbeobachtungen erhalten, nicht als dauerhafte Identität. Überlappende Seiten bei beweglichem Datenstand zulassen, wenn die Identität eindeutig und Fortschritt nachweisbar ist. Unveränderte Seite, Zyklen, widersprüchliche Identitäten und nicht bestätigbare Navigation weiterhin begrenzt stoppen. Anbieter-Snapshot, Cursor oder stabile Sortierung nur nach gesichertem Vertrag und zulässiger Nutzung verwenden. Keine zusätzliche KI-Anfrage allein wegen geänderter Dateninhalte. Tests: Einfügen, Löschen, Umsortieren, Überlappung, fehlender Fortschritt und zyklische Navigation. **Abnahme:** funktionierende Seitenwechsel bei Drift, ohne unnötige Dokumentabrufe oder falsche Strukturreparatur; keine Vollständigkeitsbehauptung ohne F-05.
 
-| Phase | Anlass | Status |
-|---|---|---|
-| C.3.11.4c | Treffer können zwischen Seiten wandern, neu entstehen, verschwinden oder umbenannt werden; technische Validierung darf nicht grundsätzlich identische Seiteninhalte verlangen. | Geplant, nächster Entwicklungsschritt. |
-| C.3.11.4d | Dynamisch erzeugte Originaldokumente können trotz identischen fachlichen Inhalts unterschiedliche Bytes/Metadaten besitzen. | Geplant; logische Identität und fachliche Versionierung getrennt von binärer Integrität. |
-| C.3.11.4e | 20 MiB Standardlimit und vollständig eingelesene Dateien begrenzen größere Abrufe und erhöhen den Speicherbedarf. | Geplant; Streaming, Validatoren und konfigurierbare Budgets. |
+#### C-11 – Generalisierung der Navigation
 
-Alle folgenden Phasen bleiben offen. Insbesondere ist weder der SQLite-Resume noch ein vollständiger fachlicher Abschlussnachweis oder eine vollständige Live-Freigabe implementiert. Die neue Planung verändert keine bestehenden Strategien, Checkpoints, Originaldokumente oder Ergebnisse.
-
-**Quellen und Genauigkeit der Historie:** Die frühen Phasen sind aus dem bisherigen Projektverlauf, den erhaltenen Pilotpaketen `KI_Crawler_Phase_B.zip`/`KI_Crawler_Phase_E_Retry.zip` und dem konsolidierten Code rekonstruiert. Die späteren Schritte stützen sich auf die Entwicklungsberichte, vorhandenen C.3.x-README-Dateien, Execution-/Validierungsberichte und historischen Benchmarks. Die Projektchronologie ist auf Ebene der vereinbarten Phasen und relevanten Korrekturversionen dokumentiert; nicht jeder einzelne Zwischenversuch ist als vollständiges Log erhalten. Testzahlen sind nicht additiv, da spätere Regressionen frühere Tests erneut ausführen. Wo kein eigenständiger Nachweis vorliegt, wird kein erfolgreicher Test behauptet.
-
-## 16. Weitere Entwicklungsroadmap
-
-Die folgende Roadmap schließt an die Projekthistorie in Kapitel 15 an und ergänzt den dokumentierten Implementierungsstand C.3.11.4b um die weitere Entwicklung des KI-Crawlers. Die Phasen C.3.11.5, C.3.11.6 und die übergeordneten Themen C.4 bis C.7 stammen aus der bisherigen Projektplanung. Die neu vereinbarten Themen C.3.11.4c–e werden vor der Wiederaufnahme umgesetzt, damit diese auf stabileren Identitäten und einer belastbaren Dokumentenverarbeitung aufbaut. Die detaillierten Arbeitspakete und Abnahmekriterien in diesem Kapitel sind **Planungsvorschläge**, noch keine abschließend vereinbarte Untergliederung oder implementierte Funktion. Termine und konkrete AWS-Dienste werden erst in den jeweiligen Phasen festgelegt.
-
-### 16.1 Übersicht und Abhängigkeiten
-
-| Phase | Thema | Stand / Ziel |
-|---|---|---|
-| C.3.11.4c | Dynamische Ergebnismengen und stabile Datensatzidentität | Nächster Entwicklungsschritt: Validierung von Struktur und Inhalt trennen. |
-| C.3.11.4d | Dokumentidentität und Versionierung | Logische Identität, binäre Integrität und fachliche Identität unterscheiden. |
-| C.3.11.4e | Speichereffiziente Dokumentenverarbeitung | Streaming, konfigurierbare Größen- und Ressourcenlimits. |
-| C.3.11.5 | Seitenübergreifende Wiederaufnahme | Sichere datensatzorientierte Fortsetzung aus SQLite-Checkpoints. |
-| C.3.11.6 | Vollständigkeitsprüfung und Abschlussbericht | Abdeckung, Dokumentenstatus und Abschlussnachweise zusammenführen. |
-| C.3.9.1–C.3.9.3 | Erweiterte Tests der adaptiven Strategieanpassung | Bewusst zurückgestellt; vor einem freigegebenen autonomen Reparaturbetrieb erneut bewerten. |
-| C.4 | Generalisierung auf unterschiedliche Zielwebseiten | Domain- und aufgabenspezifische Konfiguration vom generischen Crawler trennen. |
-| C.5 | Persistente Auftragsverwaltung und Datenhaltung | Mehrere Aufträge zentral verwalten, Datenbestände und Fortschritte konsistent halten. |
-| C.6 | AWS-Architektur und verteilte Verarbeitung | Lokalen Pilot auf eine geeignete Cloud-Architektur übertragen. |
-| C.7 | Infrastruktur- und Betriebskosten | Gesamtkosten und Wirtschaftlichkeit messen und Optimierungen ableiten. |
-
-```mermaid
-flowchart TD
-    A[C.3.11.4b: Konsolidierter lokaler Stand] --> I[C.3.11.4c: Dynamische Ergebnismengen]
-    I --> J[C.3.11.4d: Dokumentidentität]
-    J --> K[C.3.11.4e: Streaming und Ressourcenlimits]
-    K --> B[C.3.11.5: Wiederaufnahme]
-    B --> C[C.3.11.6: Vollständigkeit]
-    C --> D[C.4: Generalisierung]
-    D --> E[C.5: Auftragsverwaltung]
-    E --> F[C.6: AWS und verteilte Verarbeitung]
-    F --> G[C.7: Kosten und Optimierung]
-    H[C.3.9.1–C.3.9.3: Zurückgestellte adaptive Tests] -. Vor autonomer Freigabe prüfen .-> D
-```
-
-Die Reihenfolge beschreibt die geplante technische Entwicklung, nicht die Freigabe eines vollständigen Live-Crawls. Kosten- und Laufzeitmessung laufen bereits heute und werden in allen weiteren Phasen fortgeführt. Die Tests des adaptiven Systems besitzen noch keinen festgelegten neuen Umsetzungstermin.
-
-### 16.2 C.3.11.4c – Dynamische Ergebnismengen und stabile Datensatzidentität
-
-**Ziel:** Struktur-, Paginierungs- und fachliche Validierung voneinander trennen und die Auftragsverarbeitung von veränderlichen Seitenpositionen entkoppeln.
-
-Beispiel: Seite 1 enthält zunächst A, B, C; Seite 2 D, E, F. Nach Einfügen von X am Anfang enthält Seite 1 X, A, B und Seite 2 C, D, E. Eine Fortsetzung auf Seite 2 würde C erneut sehen und X verpassen. Bei Löschungen können noch nicht verarbeitete Treffer in bereits besuchte Seiten rutschen. Auch während eines ununterbrochenen Crawls kann sich die Menge verändern.
-
-| Prüfart | Geplanter Nachweis |
-|---|---|
-| Struktur | Selektoren, Pflichtfelder, Navigation und Dokumenten-Steuerelemente funktionieren. |
-| Paginierung | Tatsächlicher Fortschritt und gültiger Seitenwechsel; kein bloßes erneutes Anzeigen derselben Seite oder eine Schleife. |
-| Fachliche Referenz | Attribute eines eindeutig identifizierten Datensatzes stimmen mit einer unabhängigen, zeitlich passenden Referenz überein; Position ist kein Schlüssel. |
-| Snapshot | Nur bei ausdrücklich erwartetem, nachweislich stabilem Datenstand identische Mengen/Reihenfolgen vergleichen. |
-| Abdeckung | Nachweisen, welche Identitäten innerhalb des Beobachtungszeitraums erfasst wurden; keine Vollständigkeitsgarantie ohne ausreichende Grundlage. |
+**Ziel:** Den bisher am Unternehmensregister entwickelten Navigationsansatz auf weitere geeignete und zulässige Zielwebseiten übertragen, ohne für jede Domain einen neuen Crawler implementieren zu müssen.
 
 Vorgesehene Arbeitspakete:
 
-- Strategieabhängige, stabile Identität definieren, bevorzugt eine belastbare Anbieter-ID. Für das Unternehmensregister ist `register_court`, `register_type`, `register_number` ein Kandidat innerhalb des jeweiligen Registerbestandes; `company_name` wird zum veränderlichen Attribut. Wenn verfügbar, stabilen Gerichtscode bzw. fachlich definierte Normalisierung prüfen. Registerwechsel können auch diesen Schlüssel ändern; keine unbelegte Zusammenführung verschiedener Registereinträge.
-- Identitätsvertrag versionieren. Bestehende Schema-2-/Schema-3-Strategien, Checkpoints und Zertifikate nicht umschreiben; bei einer Schlüsseländerung eine neue Strategieversion und explizite Kompatibilitäts-/Migrationsprüfung vorsehen. Neue Schlüssel auf Kollisionen und fehlende Werte prüfen; Mehrdeutigkeit nicht durch Raten auflösen.
-- `PaginationValidator`, synchrone/asynchrone Navigation, `FullCrawl`, `CrawlCheckpoint` und Referenzvergleich auf die Annahmen unveränderlicher Seiten prüfen. Technische Sitzungen einzeln validieren; unterschiedliche Datenstände als Drift erfassen, nicht automatisch als Strukturfehler klassifizieren. Bei unabhängigen Referenzen Zeitbezug, veränderte Attribute und nicht mehr auffindbare Fälle getrennt ausweisen.
-- Seiten-Hashes als kurzzeitigen Navigations-/Beobachtungsnachweis erhalten; bei vorhandenen Snapshot- oder Cursor-Verträgen stärker nutzen. Nicht pauschal auf disjunkte Schlüssel zwischen allen Seiten bestehen: dieselbe verifizierte Identität darf wieder beobachtet werden, ohne erneut einen Download zu starten. Widersprüchliche Identität, unerklärte Wiederholung einer Seite und Schleifen weiterhin erkennen und begrenzt stoppen.
-- Seitenbesuche und Datensatzsichtungen getrennt von eindeutigen Entitäten speichern. Beobachtungszeit, Seite, Lauf-/Sitzungs-ID, stabile Schlüssel und Attributänderungen nachvollziehbar erfassen. Ein nicht erneut gefundener Datensatz ist zunächst „nicht beobachtet“, nicht automatisch gelöscht.
-- Untersuchen, ob der Anbieter eine stabile Sortierung, Snapshot- oder Cursor-Semantik dokumentiert und zulässt. Ohne diese Semantik bleibt Vollständigkeit bei einem beweglichen Datenbestand grundsätzlich eingeschränkt; keine Umgehung anbieterseitiger Limits.
-- Synthetische Tests: Einfügen, Löschen, Verschieben, Umbenennen, Umordnen, gültige Seitenüberlappung, echte Schlüsselkonflikte, fehlender Fortschritt, zyklische Paginierung und veraltete Referenz. Keine zusätzlichen LLM-Anfragen allein wegen Datenänderungen.
+- Domain-, Strategie- und Auftragskonfiguration für Start-URL, Allowlist, Suchparameter, Navigation und ExecutionPolicy vereinheitlichen; Schnittstellen für Extraktions- und Dokumentregeln aus D-04/E-06 anbinden.
+- Die noch fest im CLI hinterlegten Unternehmensregister-Defaults von der generischen Auftragssteuerung trennen.
+- Unterschiedliche Interaktionsmuster anhand geeigneter Testfälle untersuchen: klassische Paginierung, dynamische Filter, Navigation zu Detailseiten sowie gegebenenfalls weitere nachweisbar beherrschte Ergebnismuster.
+- Den Navigationsvertrag weiterentwickeln, ohne bestehende versionierte Strategien oder deren Hashes nachträglich umzuschreiben.
+- Discovery und Recovery auf weiteren Domains evaluieren. Reguläre Ausführung weiterhin deterministisch; LLM-Aufrufe nur bei neuer Strategie oder nachgewiesener relevanter Strukturänderung.
+- Anbieterregeln, Abruflimits und zulässige Datenzugänge pro Domain berücksichtigen. Nur validierte Interaktionsformen freigeben.
 
-**Abnahmevorschlag:** Ein technisch intakter Crawl mit geänderten Seiteninhalten wird nicht als Strukturfehler verworfen. Datensatzidentitäten bleiben unabhängig von Seitennummer und Firmenname nachvollziehbar; Kollisionen und unsichere Navigation führen weiterhin zu einem kontrollierten Stopp. Ein neuer Schlüsselvertrag ist versioniert und historische Daten bleiben unverändert. Die fachliche Vollständigkeit wird nicht aus einem bloßen Seiten-Hash abgeleitet.
+**Abnahmevorschlag:** Mehrere unterschiedliche, freigegebene Zielseiten lassen sich über dieselben generischen Navigationskomponenten verarbeiten. Unterschiede liegen in Konfiguration, Strategie oder klar isolierten Adaptern. Die bestehende Unternehmensregister-Navigation bleibt funktionsfähig. Extraktionsqualität (D-04/F-08), Dokumentenverarbeitung (E-06) und Vergleichsmetriken (G-02/G-03) werden in den jeweils zuständigen Storys abgenommen.
 
-### 16.3 C.3.11.4d – Dokumentidentität und Versionierung
+### 16.5 D – Strukturierte Datenextraktion
+
+| Story | Status | Ziel / Abnahme |
+|---|---|---|
+| D-01 – Strukturierte JSON-Extraktion | Erreicht im Pilot | Erste strukturierte Daten aus gefundenen Quellen. |
+| D-02 – Deterministische Feldextraktion | Erreicht im begrenzten Scope | Pflichtfelder, Locator-/Regex-Regeln, Parameterabgleich. |
+| D-03 – Stabile Datensatzidentität | Offen, als Nächstes | Identitätsvertrag ohne veränderliche Seitenposition oder Firmenname. |
+| D-04 – Generalisierte Extraktion | Offen | Unterschiedliche Datenmodelle und Domänen bei explizitem Extraktionsvertrag. |
+
+#### D-03 – Stabile Datensatzidentität
+
+Bevor C-10, F-04 und H-03 auf dynamische Treffer umgestellt werden, muss die Bedeutung eines Datensatzschlüssels feststehen. Bevorzugt eine belastbare Anbieter-ID; für das Unternehmensregister sind `register_court`, `register_type`, `register_number` ein Kandidat innerhalb des jeweiligen Registerbestandes. Einen stabilen Gerichtscode und definierte Normalisierung prüfen, Unternehmensnamen als veränderliches Attribut behandeln. Ein Registerwechsel kann den Schlüssel ändern; keine unbelegte Gleichsetzung verschiedener Registereinträge.
+
+Den Vertrag versionieren, neue Schlüssel auf fehlende Werte und Kollisionen prüfen und Altstrategien, Zertifikate, Hashes und Checkpoints nicht umschreiben. Beobachtung (Zeitpunkt, Sitzung, Seite, extrahierte Attribute) von Entität (stabiler Schlüssel) trennen. Nicht erneut gefunden bedeutet zunächst nicht beobachtet, nicht gelöscht. Persistenzmodell: H-01/H-03; Paginierungsverhalten: C-10; Referenzprüfung: F-04. Tests: Umbenennung, Verschiebung, echte Kollision, fehlender Schlüssel, Registerwechsel und Kompatibilität alter Strategien. **Abnahme:** eindeutige Datensatzidentität unabhängig von Name und Position, Änderungen nachvollziehbar, Mehrdeutigkeit führt nicht zu geratenen Schlüsseln.
+
+#### D-04 – Generalisierte Extraktion
+
+Zusammen mit C-11 unterschiedliche Tabellen, Listen, Detailseiten und Feldtypen untersuchen. Eingabe-/Ausgabeschema, erforderliche und optionale Felder, Normalisierung, Herkunft und Identitätsregeln aufgabenspezifisch definieren. Fehlende Werte bleiben `null`, keine erfundenen Informationen. Nicht jede Domain benötigt dieselben Pflichtfelder oder Identitätsschlüssel. Abnahme anhand geeigneter fachlicher Referenzen in F-08; bestehende Unternehmensregister-Extraktion bleibt funktionsfähig.
+
+### 16.6 E – Dokumentensuche und Download
+
+| Story | Status | Ziel / Abnahme |
+|---|---|---|
+| E-01 – Direkter HTTP-Download | Teilweise | Pilot implementiert; Legacy-`file_type`-Inkonsistenz offen, kein Ersatz für modernen Executor. |
+| E-02 – Sitzungsgebundener Browserdownload | Erreicht im begrenzten Scope | CD/PDF und SI/XML in erlaubtem Abrufkontext; spätere Live-Seiten nicht validiert. |
+| E-03 – Download-Stabilisierung | Erreicht im lokalen Test | Pacing, Diagnose, kontrollierter Abbruch, 14/14 lokale Downloads und Nutzerbestätigung. |
+| E-04 – Dokumentidentität und Versionierung | Offen | Logische Identität, Abrufinstanz und binäre/fachliche Version unterscheiden. |
+| E-05 – Speichereffiziente Dokumentenverarbeitung | Offen | Streaming, konfigurierbare Ressourcenlimits und Dateivalidierung. |
+| E-06 – Weitere Dokumentquellen | Offen | Erlaubte neue Dokumenttypen und Zugriffsmuster; Legacy-Downloader korrigieren oder kontrolliert ablösen. |
+
+#### E-04 – Dokumentidentität und Versionierung
 
 **Ziel:** Vermeiden, dass binär unterschiedliche, fachlich gleiche Dateien als neue fachliche Versionen gelten oder dass verschiedene fachliche Dokumente fälschlich zusammengeführt werden. Originaldateien unverändert erhalten.
 
@@ -1061,7 +991,7 @@ Ein CD-Registerabdruck kann zu verschiedenen Abrufzeitpunkten denselben fachlich
 
 Vorgesehene Arbeitspakete:
 
-- Logischen Dokumentenschlüssel auf Basis des in C.3.11.4c entwickelten Datensatzschlüssels definieren. Für CD/SI zunächst Quelle, Registeridentität und Dokumenttyp; mehrere Dokumente desselben Typs erfordern einen weiteren stabilen Discriminator, z.B. Anbieter-ID, Veröffentlichung oder Version. Ein Dokumenttyp allein bezeichnet möglicherweise nur eine Kategorie, nicht ein konkretes Dokument.
+- Logischen Dokumentenschlüssel auf Basis des in D-03 entwickelten Datensatzschlüssels definieren. Für CD/SI zunächst Quelle, Registeridentität und Dokumenttyp; mehrere Dokumente desselben Typs erfordern einen weiteren stabilen Discriminator, z.B. Anbieter-ID, Veröffentlichung oder Version. Ein Dokumenttyp allein bezeichnet möglicherweise nur eine Kategorie, nicht ein konkretes Dokument.
 - Logischen Schlüssel, einzelne Abrufinstanz und fachliche Version unterscheiden. Abrufzeitpunkt (`retrieved_at`), `source_document_id`, `source_version`, `sha256`, `size_bytes`, `content_sha256` und `normalization_version` als mögliche Metadaten definieren; unbekannte Werte `null`. Der vorhandene binäre `sha256` bleibt erhalten.
 - Innerhalb eines Auftrags vor dem Abruf anhand des logischen Schlüssels und bestätigten Zustands entscheiden, ob ein Dokument bereits vorliegt. Für spätere Aktualisierungsaufträge ausdrücklich neue Versionen bzw. eine Refresh-Regel zulassen; logische Gleichheit beweist keine unveränderte fachliche Version. Anbieter-ETag/Last-Modified nur bei nachgewiesener Bedeutung nutzen.
 - Normalisierungs-Schnittstelle versionieren. XML-Kanonisierung und gezielt bekannte flüchtige Felder untersuchen; sichere Parser verwenden. PDF-Text oder strukturierte Inhalte nur bei nachgewiesener Eignung; Bilder, Tabellen, Signaturen und fachlich relevante Zeitangaben nicht ignorieren. Keine universelle semantische PDF-Gleichheit behaupten.
@@ -1069,9 +999,11 @@ Vorgesehene Arbeitspakete:
 - Versionen und Abrufereignisse nachvollziehbar speichern, Originaldokumente nicht automatisch löschen oder überschreiben. Historische Hashes und Checkpoints unverändert lassen; explizite Migration oder neue Version vorsehen.
 - Tests: exakt gleiche Bytes, verschiedene technische Timestamps bei gleichem fachlichem Inhalt, fachlich relevante Datums-/Textänderung, mehrere Dokumente eines Typs, fehlende Anbieter-ID, unzuverlässige Normalisierung, beschädigte lokale Datei und Aktualisierungsauftrag.
 
-**Abnahmevorschlag:** Innerhalb eines Auftrags werden bestätigte logische Dokumente nicht unnötig erneut angefordert. Binäre Integrität bleibt separat überprüfbar. Unterschiede in flüchtigen Metadaten gelten nur bei nachgewiesener Normalisierung als fachlich irrelevant; unklare Inhalte bleiben getrennt bzw. unbekannt. Keine universelle PDF-Normalisierung als Voraussetzung für C.3.11.5.
+**Abnahmevorschlag:** Innerhalb eines Auftrags werden bestätigte logische Dokumente nicht unnötig erneut angefordert. Binäre Integrität bleibt separat überprüfbar. Unterschiede in flüchtigen Metadaten gelten nur bei nachgewiesener Normalisierung als fachlich irrelevant; unklare Inhalte bleiben getrennt bzw. unbekannt. Keine universelle PDF-Normalisierung als Voraussetzung für H-03.
 
-### 16.4 C.3.11.4e – Speichereffiziente Dokumentenverarbeitung
+F-08 verantwortet den fachlichen Nachweis der Normalisierung; H-03/H-04 die persistente Zuordnung. Die logische Identität muss vor der Wiederaufnahme definiert sein, eine universelle fachliche PDF-Normalisierung ist keine Voraussetzung dafür.
+
+#### E-05 – Speichereffiziente Dokumentenverarbeitung
 
 **Ziel:** Größere zulässige Originaldokumente zuverlässig verarbeiten, ohne den RAM-Bedarf proportional zur Dateigröße oder Anzahl gleichzeitiger Downloads ansteigen zu lassen. Das aktuelle Standardlimit von 20 MiB wird nicht einfach entfernt, sondern durch geeignete, konfigurierbare Ressourcenbudgets ersetzt.
 
@@ -1097,7 +1029,119 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Zulässige Dateien über 20 MiB können innerhalb ausdrücklich konfigurierter Budgets ohne vollständige Python-Dateipuffer verarbeitet werden. Abbruch bei Ressourcenüberschreitung ist nachvollziehbar, Teildateien werden nicht als Erfolg erfasst, Originalbytes und Hash bleiben korrekt. Wo Browser-/Parserverhalten keine harte Grenze ermöglicht, wird die Einschränkung nachgewiesen und nicht verborgen. Die vorhandenen kleinen PDF-/XML-Downloads und Checkpoint-Tests bleiben funktionsfähig.
 
-### 16.5 C.3.11.5 – Seitenübergreifende Wiederaufnahme
+F-08 überprüft Validierungsqualität; B-02/G-04 übernehmen Messdaten bzw. Ressourcenkosten. Die diskutierten Limits sind keine Freigabe. Die konkreten Policy-Werte werden bei der Umsetzung festgelegt.
+
+#### E-06 – Weitere Dokumentquellen
+
+In Verbindung mit C-11 und D-04 weitere erlaubte Abrufpfade, Dokumenttypen, stabile Anbieter-IDs und passende Validatoren untersuchen. Legacy-Downloader nicht ungeprüft weiterverwenden; entweder `file_type`-Vertrag reparieren und testen oder Nutzung kontrolliert beenden. Keine Umgehung von Zugriffsbeschränkungen; Freigabe und sichere Dateityp-/Ressourcenprüfung vor produktiver Nutzung.
+
+### 16.7 F – Qualitätsprüfung und Halluzinationskontrolle
+
+| Story | Status | Ziel / Abnahme |
+|---|---|---|
+| F-01 – Fehlerklassifizierung | Erreicht im Pilot | Zugriff, Server, Netzwerk, Interaktion, Download und Struktur unterscheiden. |
+| F-02 – Strategievalidierung und Freigabe | Teilweise | Hash-gebundene Zertifizierung, unabhängige Stichprobe; Version 1 validiert, nicht aktiviert. |
+| F-03 – Mehrseitige technische/fachliche Validierung | Teilweise | Zwei Seiten in zwei unabhängigen Sitzungen technisch bestätigt; Endzustand, Referenz und späterer Download offen. |
+| F-04 – Validierung dynamischer Datenbestände | Offen | Struktur, Paginierung, fachliche Referenz und Snapshot getrennt prüfen. |
+| F-05 – Vollständigkeitsprüfung und Abschlussbericht | Offen | Abdeckung und Grenzen nachweisen, offene Freigabekriterien schließen. |
+| F-06 – Adaptive End-to-End-Tests | Zurückgestellt | Simulator, Fehlerszenarien, reale begrenzte adaptive Kette. |
+| F-07 – Einheitliches Testsystem | Teilweise | Ausführlicher Runner und separate Tests umgesetzt; alte Fixture-Argumente und vollständige Regression offen. |
+| F-08 – Fachliche Qualität und Halluzinationskontrolle | Offen / Pilotanteile vorhanden | Unabhängige domänen-/dokumenttypspezifische Referenzen, False Positives, fehlende Werte und fachliche Normalisierung prüfen. |
+
+#### F-04 – Validierung dynamischer Datenbestände
+
+**Ziel:** Struktur-, Paginierungs- und fachliche Validierung voneinander trennen und die Auftragsverarbeitung von veränderlichen Seitenpositionen entkoppeln.
+
+Beispiel: Seite 1 enthält zunächst A, B, C; Seite 2 D, E, F. Nach Einfügen von X am Anfang enthält Seite 1 X, A, B und Seite 2 C, D, E. Eine Fortsetzung auf Seite 2 würde C erneut sehen und X verpassen. Bei Löschungen können noch nicht verarbeitete Treffer in bereits besuchte Seiten rutschen. Auch während eines ununterbrochenen Crawls kann sich die Menge verändern.
+
+| Prüfart | Geplanter Nachweis |
+|---|---|
+| Struktur | Selektoren, Pflichtfelder, Navigation und Dokumenten-Steuerelemente funktionieren. |
+| Paginierung | Tatsächlicher Fortschritt und gültiger Seitenwechsel; kein bloßes erneutes Anzeigen derselben Seite oder eine Schleife. |
+| Fachliche Referenz | Attribute eines eindeutig identifizierten Datensatzes stimmen mit einer unabhängigen, zeitlich passenden Referenz überein; Position ist kein Schlüssel. |
+| Snapshot | Nur bei ausdrücklich erwartetem, nachweislich stabilem Datenstand identische Mengen/Reihenfolgen vergleichen. |
+| Abdeckung | Nachweisen, welche Identitäten innerhalb des Beobachtungszeitraums erfasst wurden; keine Vollständigkeitsgarantie ohne ausreichende Grundlage. |
+
+Abhängigkeiten: D-03 (Schlüssel) und C-10 (Navigationsnachweis). Den Vertrag mit C-10 vorab abstimmen und anschließend die Integration gemeinsam testen; E-04 ist erst für spätere fachliche Dokumentreferenzen in F-08 erforderlich. Jede technische Sitzung für sich prüfen; Drift nicht als Strukturfehler werten. Referenzdatensätze anhand stabiler Schlüssel und zeitlich passender Attribute vergleichen, nicht anhand von Zeilenindex/Seite. Veraltete bzw. nicht mehr auffindbare Referenzfälle separat markieren. Snapshot-Gleichheit nur verlangen, wenn ein stabiler Snapshot nachgewiesen und ausdrücklich erwartet wird. Tests: unterschiedliche Reihenfolgen, hinzugefügte/entfernte Treffer, umbenannte Entität, stabile und veraltete Referenz, falscher Feldwert, echte Strukturänderung. **Abnahme:** technisch gültige dynamische Sitzungen bestehen; tatsächliche Struktur-/Extraktionsfehler bleiben erkennbar; keine Gleichsetzung von technischer und fachlicher Freigabe. F-03 bleibt offen für den noch fehlenden späteren Live-Download und unabhängigen Referenznachweis; F-05 übernimmt die Endzustands- und Abdeckungsprüfung.
+
+#### F-05 – Vollständigkeitsprüfung und Abschlussbericht
+
+**Ziel:** Verlässlich unterscheiden, ob ein Auftrag technisch beendet ist, alle angezeigten Datensätze verarbeitet wurden oder die gesamte fachlich angeforderte Ergebnismenge nachweislich erfasst ist.
+
+Vorgesehene Arbeitspakete:
+
+- Extrahierte und abgeschlossene Seiten, eindeutige Unternehmen, vorgesehene und erfolgreich validierte Dokumente sowie offene oder fehlerhafte Einträge aus Checkpoint und Execution Report abgleichen.
+- Expliziten Paginierungsendzustand, fehlende Seiten, wiederholt beobachtete Identitäten, Sicherheitslimits, Anbietergrenzen und unbekannte Gesamtzahlen berücksichtigen. Wiederholte Sichtungen bei dynamischen Daten von widersprüchlichen Schlüsseln und Navigationsschleifen unterscheiden. Beobachtungszeitraum, Änderungen während des Crawls, Snapshot-/Cursor-Verfügbarkeit und verbleibende Abdeckungslücken ausweisen. Bei fehlendem Snapshot kann selbst eine vollständige Traversierung keine punktgenaue Vollständigkeit garantieren.
+- `displayed_results_traversed`, `pagination_end_verified`, `result_limit_detected` und `completeness_verified` fachlich sauber voneinander abgrenzen. Unbekannte Sollmengen bleiben unbekannt (`null`), nicht null Treffer.
+- Die bestehende Validierungslücke für Endzustände hinter dem bisherigen Zwei- bis Drei-Seiten-Fenster schließen; eine überprüfte Endregel und die erforderlichen unabhängigen Referenzen vorsehen.
+- Einen reproduzierbaren Abschlussbericht mit Abdeckungsstatus, Abbruchgrund, Dokumentenintegrität, Laufzeit, LLM-Aufrufen und Kosten erstellen.
+- Die beobachtete 1.000-Treffer-Begrenzung des Unternehmensregisters als Anbietergrenze behandeln. Eine vollständige fachliche Abdeckung setzt einen zulässigen Zugang und geeignete Nachweise voraus; ein Erreichen der letzten angezeigten Seite allein genügt nicht.
+
+**Abnahmevorschlag:** Vollständige, begrenzte, unterbrochene und nicht eindeutig prüfbare Aufträge werden korrekt unterschieden. `completeness_verified` wird nur bei ausreichenden Nachweisen gesetzt. Die bestehende Live-Sperre bleibt bis zur Erfüllung der technischen und anbieterseitigen Voraussetzungen bestehen.
+
+Abhängigkeiten: C-09/C-10, D-03, E-04/E-05, F-02–F-04 und H-03. Berichtsdaten und fachlicher Abdeckungsnachweis sind hier verortet, nicht als weiterer Navigationsschritt in C.
+
+#### F-06 – Zurückgestellte adaptive Tests
+
+Diese drei Themen wurden ausdrücklich zurückgestellt, um den lokalen Pilot nicht durch einen umfangreichen Simulator zu verzögern. Sie sind weiterhin Bestandteil des offenen Entwicklungsbestands, aber nicht der unmittelbar nächste Schritt.
+
+| Thema | Geplanter Zweck |
+|---|---|
+| F-06.1 – Lokalen Crawling-Simulator entwickeln | Kontrollierbare Seitenstruktur, Navigation, Paginierung und Dokumente als reproduzierbare Testumgebung bereitstellen. |
+| F-06.2 – Automatisierte Fehlerszenarien | Strukturänderungen von Netzwerk-, Server-, Interaktions- und Zugriffsbeschränkungen unterscheiden; kontrollierte Recovery und Abbruchbedingungen testen. |
+| F-06.3 – Vollständiger adaptiver End-to-End-Test | Discovery, deterministische Ausführung, Fehlerklassifizierung, verifizierte Strukturänderung, begrenzte KI-Reparatur, unabhängige Validierung und kontrollierte Aktivierung zusammen testen. |
+
+Die bestehende Recovery-Implementierung und einzelne synthetische Regressionstests ersetzen keinen vollständigen adaptiven End-to-End-Nachweis. Eine spätere Durchführung mit echter LLM-Anbindung erfordert ausdrücklich freigegebene Testaufrufe und Kostenlimits. Bis dahin bleiben automatische Wiederholung, Reparatur und Aktivierung auf die vorhandenen kontrollierten Mechanismen beschränkt.
+
+#### F-07 – Testsystem und Regression
+
+Gemeinsamen TestRunner, getrennte Testpfade und temporäre Fixtures beibehalten. Die drei älteren Module mit expliziten Strategie-Argumenten auf zuverlässige Discovery umstellen; vollständige historische Regression ausführen. Keine kostenpflichtige API oder Live-Abrufe ohne gesonderte Freigabe. Abnahme: benannte Testfälle, aussagekräftige Fehlerausgaben, explizite OK/NICHT-OK-Zählung und reproduzierbare vollständige lokale Suite.
+
+#### F-08 – Fachliche Qualität und Halluzinationskontrolle
+
+Fachliche Referenzen pro Domain, Feld und Dokumenttyp mit Herkunft und zeitlichem Bezug aufbauen. Falsche/erfundene Werte getrennt von fehlenden Werten und nicht mehr verifizierbaren Fällen zählen. Bei unzureichender Evidenz `null` statt Raten. E-04-Normalisierung mit positiven und negativen Referenzpaaren prüfen: flüchtige Metadaten bei fachlicher Gleichheit, relevante Datums-/Inhaltsänderungen, Bilder, Tabellen und Signaturen. Bei nicht zuverlässiger Normalisierung `content_sha256: null`, kein fachlicher Duplikatnachweis. Tests für die E-05-Validatoren müssen Beschädigung, falsches Format und Parser-/Ressourcengrenzen unterscheiden. Abnahme: nachvollziehbare fachliche Qualitätsmetriken und konservative Freigaben; G-03 verwendet dieselben Referenzen für Modellvergleiche.
+
+### 16.8 G – Modellvergleich und Kostenbenchmark
+
+| Story | Status | Ziel / Abnahme |
+|---|---|---|
+| G-01 – Baseline und Laufzeitmessung | Erreicht | Vergleich agentischer und deterministischer Pilotläufe. |
+| G-02 – BenchmarkAnalyzer | Erreicht im bisherigen Scope | Runs, Tokens, Zeiten und bekannte Kosten reproduzierbar auswerten; fehlende Kosten nicht nullsetzen. |
+| G-03 – Systematischer Modellvergleich | Offen | Discovery-/Reparaturmodelle an identischen Aufgaben und Referenzen messen. |
+| G-04 – Infrastruktur-/Betriebskosten | Offen | Gesamtkosten pro Auftrag/Ergebnis und Optimierung nach Qualität und Aufwand. |
+
+#### G-03 – Systematischer Modellvergleich
+
+Mit denselben zulässigen Testaufgaben und Referenzen aus F-08 unterschiedliche geeignete Modelle vergleichen: Strategie-/Schemaqualität, falsche bzw. fehlende Werte, Halluzinationen, erfolgreiche Ausführung, Latenz, Tokenverbrauch und Kosten. Einmalige Discovery- und Recovery-Aufwände von deterministischen Ausführungskosten trennen. Modell-/Konfigurationsversionen, Testbedingungen und Stichprobengröße erfassen. Keine Modellrangfolge ohne Messdaten. Abnahme: reproduzierbarer Vergleich mit Qualitäts-/Kosten-Trade-offs und dokumentierten Unsicherheiten. Kostenpflichtige Tests nur mit Freigabe und Budget.
+
+#### G-04 – Infrastruktur- und Betriebskosten
+
+**Ziel:** Die Wirtschaftlichkeit des Crawlers nicht nur anhand der LLM-Kosten, sondern anhand der gesamten Kosten pro erfolgreich verarbeitetem Auftrag und Datensatz beurteilen.
+
+Vorgesehene Arbeitspakete:
+
+- Bestehende Token- und Web-Suchkosten um Rechenzeit, CPU-/RAM-Verbrauch, Speicher, Datenbank- und Queue-Operationen, Monitoring und gegebenenfalls Netzwerk- und weitere Infrastrukturkosten ergänzen.
+- Einmalige Discovery-, Validierungs- und Recovery-Kosten von wiederkehrenden deterministischen Ausführungskosten unterscheiden; Zuordnung über Auftrags- bzw. Run-IDs sicherstellen.
+- Kennzahlen pro Auftrag, Seite, eindeutigem Unternehmen und erfolgreich validiertem Dokument berechnen. Fehlversuche und unvollständige Runs separat ausweisen, fehlende Kosten nicht als null behandeln.
+- Lokale Baseline und Cloud-Pilot unter vergleichbaren Bedingungen auswerten. Kostenmodelle anhand gemessener Ausführungen und der zum jeweiligen Zeitpunkt gültigen Preisgrundlagen aufbauen.
+- Szenarien für unterschiedliche Auftragsgrößen, erlaubte Parallelität, Dokumentenmengen und Strategie-Wiederverwendung untersuchen; Fixkosten und variable Kosten getrennt ausweisen.
+- Optimierungsmöglichkeiten nach Kosten, Laufzeit, Fehlerquote und Datenqualität bewerten. Budgetüberschreitungen und technische Abweichungen überwachen; Schutz- und Validierungsmaßnahmen nicht zugunsten eines billigeren Crawls entfernen.
+
+**Abnahmevorschlag:** Ein nachvollziehbares Kostenmodell mit gemessenen Baselines, dokumentierten Annahmen, Unsicherheiten und klarer Trennung von einmaligen und laufenden Kosten liegt vor. Die Kosten je erfolgreichem Ergebnis können mit dem bisherigen Benchmark verglichen werden. Konkrete AWS-Preise oder eine Wirtschaftlichkeitsprognose werden erst mit der tatsächlichen Architektur und aktuellen Preisgrundlagen ermittelt.
+
+Abhängigkeiten: B-02, G-02, H-05 für echte Cloud-Messdaten; lokale Kosten-/Ressourcenmessung kann vorher beginnen. G-04 besitzt die Kostenanalyse, nicht das Cloud-Deployment.
+
+### 16.9 H – AWS-Integration und lokale Infrastrukturvorbereitung
+
+| Story | Status | Ziel / Abnahme |
+|---|---|---|
+| H-01 – Persistente lokale Checkpoints | Erreicht im lokalen Scope | SQLite-Auftragszustand, Transaktionen, Absturztest; keine allgemeine Wiederaufnahme. |
+| H-02 – Projekt-/Speicherstruktur | Erreicht | Konsolidiertes src, zentrale Pfade, Migration, Installationsdokumentation; historische Daten unverändert. |
+| H-03 – Sichere auftragsbezogene Wiederaufnahme | Teilweise | Begrenzter alter ResumePlanner vorhanden; datensatzorientierter SQLite-Resume offen. |
+| H-04 – Zentrale Auftragsverwaltung und Datenhaltung | Offen | Mehrere Jobs, Queue, Speicherabstraktionen und konsistente Identitäten. |
+| H-05 – AWS-Architektur und verteilte Verarbeitung | Offen | Freigegebener, begrenzter und reproduzierbarer Cloud-Pilot. |
+
+#### H-03 – Sichere auftragsbezogene Wiederaufnahme
 
 **Ziel:** Einen unterbrochenen Auftrag aus seinem persistenten Checkpoint fortsetzen, ohne bereits erfolgreich beschaffte Dokumente erneut anzufordern oder einen unklaren Zustand zu übergehen.
 
@@ -1113,49 +1157,9 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Ein synthetischer mehrseitiger Auftrag kann nach Unterbrechung fortgesetzt werden. Bereits verifizierte Dokumente bleiben unverändert, neue Downloads betreffen nur zulässige offene oder neu beobachtete Einträge. Veränderte Seitenpositionen sind kein Fehler an sich. Unklare Identität, unklare Abrufzustände und nicht bestätigbare Navigation führen zu einem kontrollierten Abbruch mit erklärbarem Bericht. Bei beweglichen Datenbeständen wird keine Snapshot-Vollständigkeit behauptet. Der geplante CLI-Einstieg `--resume <crawl_id>` ist zum dokumentierten Stand noch nicht implementiert.
 
-### 16.6 C.3.11.6 – Vollständigkeitsprüfung und Abschlussbericht
+D-03, C-10, F-04, E-04 und E-05 liefern die benötigten Verträge. H-03 erweitert H-01 um getrennte Beobachtungs-/Entitätszustände, exklusive Auftragsübernahme und nachvollziehbare Fortsetzung. Alte Checkpoints nur nach expliziter Kompatibilitätsprüfung bzw. Migration weiterverwenden. Die Story ist eine lokale Infrastrukturvorarbeit, kein AWS-spezifischer Dienst.
 
-**Ziel:** Verlässlich unterscheiden, ob ein Auftrag technisch beendet ist, alle angezeigten Datensätze verarbeitet wurden oder die gesamte fachlich angeforderte Ergebnismenge nachweislich erfasst ist.
-
-Vorgesehene Arbeitspakete:
-
-- Extrahierte und abgeschlossene Seiten, eindeutige Unternehmen, vorgesehene und erfolgreich validierte Dokumente sowie offene oder fehlerhafte Einträge aus Checkpoint und Execution Report abgleichen.
-- Expliziten Paginierungsendzustand, fehlende Seiten, wiederholt beobachtete Identitäten, Sicherheitslimits, Anbietergrenzen und unbekannte Gesamtzahlen berücksichtigen. Wiederholte Sichtungen bei dynamischen Daten von widersprüchlichen Schlüsseln und Navigationsschleifen unterscheiden. Beobachtungszeitraum, Änderungen während des Crawls, Snapshot-/Cursor-Verfügbarkeit und verbleibende Abdeckungslücken ausweisen. Bei fehlendem Snapshot kann selbst eine vollständige Traversierung keine punktgenaue Vollständigkeit garantieren.
-- `displayed_results_traversed`, `pagination_end_verified`, `result_limit_detected` und `completeness_verified` fachlich sauber voneinander abgrenzen. Unbekannte Sollmengen bleiben unbekannt (`null`), nicht null Treffer.
-- Die bestehende Validierungslücke für Endzustände hinter dem bisherigen Zwei- bis Drei-Seiten-Fenster schließen; eine überprüfte Endregel und die erforderlichen unabhängigen Referenzen vorsehen.
-- Einen reproduzierbaren Abschlussbericht mit Abdeckungsstatus, Abbruchgrund, Dokumentenintegrität, Laufzeit, LLM-Aufrufen und Kosten erstellen.
-- Die beobachtete 1.000-Treffer-Begrenzung des Unternehmensregisters als Anbietergrenze behandeln. Eine vollständige fachliche Abdeckung setzt einen zulässigen Zugang und geeignete Nachweise voraus; ein Erreichen der letzten angezeigten Seite allein genügt nicht.
-
-**Abnahmevorschlag:** Vollständige, begrenzte, unterbrochene und nicht eindeutig prüfbare Aufträge werden korrekt unterschieden. `completeness_verified` wird nur bei ausreichenden Nachweisen gesetzt. Die bestehende Live-Sperre bleibt bis zur Erfüllung der technischen und anbieterseitigen Voraussetzungen bestehen.
-
-### 16.7 Zurückgestellte Themen – C.3.9.1 bis C.3.9.3
-
-Diese drei Themen wurden vor C.3.10 ausdrücklich zurückgestellt, um den lokalen Pilot nicht durch einen umfangreichen Simulator zu verzögern. Sie sind weiterhin Bestandteil des offenen Entwicklungsbestands, aber nicht der unmittelbar nächste Schritt.
-
-| Thema | Geplanter Zweck |
-|---|---|
-| C.3.9.1 – Lokalen Crawling-Simulator entwickeln | Kontrollierbare Seitenstruktur, Navigation, Paginierung und Dokumente als reproduzierbare Testumgebung bereitstellen. |
-| C.3.9.2 – Automatisierte Fehlerszenarien | Strukturänderungen von Netzwerk-, Server-, Interaktions- und Zugriffsbeschränkungen unterscheiden; kontrollierte Recovery und Abbruchbedingungen testen. |
-| C.3.9.3 – Vollständiger adaptiver End-to-End-Test | Discovery, deterministische Ausführung, Fehlerklassifizierung, verifizierte Strukturänderung, begrenzte KI-Reparatur, unabhängige Validierung und kontrollierte Aktivierung zusammen testen. |
-
-Die bestehende Recovery-Implementierung und einzelne synthetische Regressionstests ersetzen keinen vollständigen adaptiven End-to-End-Nachweis. Eine spätere Durchführung mit echter LLM-Anbindung erfordert ausdrücklich freigegebene Testaufrufe und Kostenlimits. Bis dahin bleiben automatische Wiederholung, Reparatur und Aktivierung auf die vorhandenen kontrollierten Mechanismen beschränkt.
-
-### 16.8 C.4 – Generalisierung auf unterschiedliche Zielwebseiten
-
-**Ziel:** Den bisher am Unternehmensregister entwickelten Ansatz auf weitere geeignete und zulässige Zielwebseiten übertragen, ohne für jede Domain einen neuen Crawler implementieren zu müssen.
-
-Vorgesehene Arbeitspakete:
-
-- Domain-, Strategie- und Auftragskonfiguration vereinheitlichen: Start-URL, Allowlist, Suchparameter, erwartete Datenfelder, Dokumententypen und ExecutionPolicy.
-- Die noch fest im CLI hinterlegten Unternehmensregister-Defaults von der generischen Auftragssteuerung trennen.
-- Unterschiedliche Ergebnismuster anhand geeigneter Testfälle untersuchen, z.B. klassische Paginierung, Tabellen und Listen, dynamische Filter sowie dokumentbezogene Detailseiten. Nur tatsächlich validierte Interaktionsformen freigeben.
-- Schema und Extraktionsvertrag weiterentwickeln, ohne bestehende versionierte Strategien oder deren Hashes nachträglich umzuschreiben. Fehlende Informationen von fehlerhaften Extraktionen unterscheiden; im Zweifel keine Werte erfinden.
-- Discovery und Recovery auf weiteren Domains evaluieren. Reguläre Ausführung weiterhin deterministisch; LLM-Aufrufe nur bei neuer Strategie oder nachgewiesener relevanter Strukturänderung.
-- Domänenbezogene unabhängige Referenzen, Regressionstests und Vergleichsmetriken aufbauen. Anbieterregeln, Abruflimits und zulässige Datenzugänge pro Domain berücksichtigen.
-
-**Abnahmevorschlag:** Mehrere unterschiedliche, freigegebene Zielseiten lassen sich über dieselben generischen Komponenten verarbeiten; Unterschiede sind in Konfiguration, Strategie oder klar isolierten Adaptern beschrieben. Die bestehende Unternehmensregister-Strategie bleibt funktionsfähig. Technische und fachliche Extraktionsqualität, Dokumentenintegrität, LLM-Aufrufe und Laufzeiten sind vergleichbar messbar.
-
-### 16.9 C.5 – Persistente Auftragsverwaltung und Datenhaltung
+#### H-04 – Persistente Auftragsverwaltung und Datenhaltung
 
 **Ziel:** Von einzelnen lokalen Crawls mit auftragsbezogenen SQLite-Dateien zu einer konsistenten Verwaltung mehrerer Aufträge und ihrer Ergebnisse gelangen.
 
@@ -1170,7 +1174,7 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Mehrere Aufträge können getrennt verwaltet und nach einem Prozessneustart sicher identifiziert werden. Fortschritte, Dokumente, Strategieversionen und Metriken bleiben eindeutig zugeordnet. Der lokale Betrieb bleibt möglich; eine zentrale externe Datenbank ist noch keine zwingende Voraussetzung.
 
-### 16.10 C.6 – AWS-Architektur und verteilte Verarbeitung
+#### H-05 – AWS-Architektur und verteilte Verarbeitung
 
 **Ziel:** Den funktionierenden lokalen Crawler als kontrollierten Cloud-Pilot betreiben, ohne die Trennung zwischen KI-gestützter Strategieentwicklung und deterministischer Ausführung aufzugeben.
 
@@ -1186,26 +1190,46 @@ Vorgesehene Arbeitspakete:
 
 **Abnahmevorschlag:** Ein freigegebener, begrenzter Auftrag läuft reproduzierbar in AWS; Dokumente, Strategieversion, Checkpoints und Metriken sind vollständig zugeordnet. Ein Worker-Ausfall erzeugt keinen unkontrollierten Doppelabruf. Die Architektur und ihre Kostenannahmen sind dokumentiert, bevor größere Lasttests oder Skalierung freigegeben werden.
 
-### 16.11 C.7 – Infrastruktur- und Betriebskosten
+### 16.10 Umsetzungsreihenfolge und Abhängigkeiten (featureübergreifend)
 
-**Ziel:** Die Wirtschaftlichkeit des Crawlers nicht nur anhand der LLM-Kosten, sondern anhand der gesamten Kosten pro erfolgreich verarbeitetem Auftrag und Datensatz beurteilen.
+Die Reihenfolge ist eine vorgeschlagene Arbeitsplanung, keine neue Feature-Hierarchie. Status und Abnahmen werden pro Story gepflegt, nicht anhand der zuletzt bearbeiteten Feature-Nummer. Der konsolidierte lokale Pilot ist der Ausgangspunkt.
 
-Vorgesehene Arbeitspakete:
+| Reihenfolge / Gruppe | Storys | Grund |
+|---|---|---|
+| 1 – als Nächstes | D-03 | Stabiler Schlüssel als Grundlage für Trefferabgleich und Dokumentzuordnung. |
+| 2 – dynamische Treffer | C-10, F-04 | Navigation und Validierung anhand des Identitätsvertrags getrennt umstellen; gemeinsam testen. |
+| 3 – Dokumente | E-04, E-05 | Logische Schlüssel und sichere ressourcenbegrenzte Verarbeitung. E-05 kann unabhängig vom fachlichen Hash vorbereitet werden. |
+| 4 – Wiederaufnahme | H-03 | Benötigt stabile Identitäten, Navigation, Validierungsvertrag und Dokumentzustände. |
+| 5 – Abschluss-/Freigabenachweis | F-02, F-03, F-05 | Offene fachliche Referenzen, Endregel und späterer Download, Abdeckung und ausdrückliche Anbieterfreigabe. Technische Vorarbeiten können früher beginnen. |
+| 6 – Generalisierung | C-11, D-04, E-06, F-08 | Neue Domains, Extraktionsverträge, Dokumenttypen und unabhängige Referenzen gemeinsam evaluieren. Fachliche Qualitätsprüfungen beginnen bereits bei D-03/E-04. |
+| 7 – Auftragsverwaltung und Cloud | H-04, H-05 | Mehrere Jobs, Speicherabstraktionen und Cloud-Integration; keine automatische Freigabe durch lokale Tests. |
+| Begleitend | B-02, F-07, G-02/G-03/G-04 | Logging und Regression fortlaufend; Modellvergleich bei geeigneten Referenzen, Cloud-Kosten bei tatsächlichen Cloud-Messungen. |
+| Zurückgestellt | F-06 | Vor einer Freigabe autonomer Reparaturen erneut bewerten; kein umfangreicher Simulator als unmittelbare Voraussetzung. |
 
-- Bestehende Token- und Web-Suchkosten um Rechenzeit, CPU-/RAM-Verbrauch, Speicher, Datenbank- und Queue-Operationen, Monitoring und gegebenenfalls Netzwerk- und weitere Infrastrukturkosten ergänzen.
-- Einmalige Discovery-, Validierungs- und Recovery-Kosten von wiederkehrenden deterministischen Ausführungskosten unterscheiden; Zuordnung über Auftrags- bzw. Run-IDs sicherstellen.
-- Kennzahlen pro Auftrag, Seite, eindeutigem Unternehmen und erfolgreich validiertem Dokument berechnen. Fehlversuche und unvollständige Runs separat ausweisen, fehlende Kosten nicht als null behandeln.
-- Lokale Baseline und Cloud-Pilot unter vergleichbaren Bedingungen auswerten. Kostenmodelle anhand gemessener Ausführungen und der zum jeweiligen Zeitpunkt gültigen Preisgrundlagen aufbauen.
-- Szenarien für unterschiedliche Auftragsgrößen, erlaubte Parallelität, Dokumentenmengen und Strategie-Wiederverwendung untersuchen; Fixkosten und variable Kosten getrennt ausweisen.
-- Optimierungsmöglichkeiten nach Kosten, Laufzeit, Fehlerquote und Datenqualität bewerten. Budgetüberschreitungen und technische Abweichungen überwachen; Schutz- und Validierungsmaßnahmen nicht zugunsten eines billigeren Crawls entfernen.
+```mermaid
+flowchart TD
+    D03[D-03 Datensatzidentität] --> C10[C-10 Navigation]
+    D03 --> F04[F-04 Validierung]
+    D03 --> E04[E-04 Dokumentidentität]
+    E05[E-05 Streaming und Limits] --> H03[H-03 Wiederaufnahme]
+    C10 --> H03
+    F04 --> H03
+    E04 --> H03
+    H03 --> F05[F-05 Abschlussnachweis]
+    F02[F-02 / F-03 offene Validierungsnachweise] --> F05
+    F05 --> GEN[C-11 / D-04 / E-06 / F-08 Generalisierung]
+    GEN --> H04[H-04 Auftragsverwaltung]
+    H04 --> H05[H-05 AWS-Pilot]
+    H05 --> G04[G-04 Gesamtkosten]
+    B02[B-02 Logging] -.-> G04
+    F07[F-07 Regression] -.-> H03
+    F06[F-06 adaptive Tests zurückgestellt] -. vor autonomer Freigabe .-> GEN
+```
 
-**Abnahmevorschlag:** Ein nachvollziehbares Kostenmodell mit gemessenen Baselines, dokumentierten Annahmen, Unsicherheiten und klarer Trennung von einmaligen und laufenden Kosten liegt vor. Die Kosten je erfolgreichem Ergebnis können mit dem bisherigen Benchmark verglichen werden. Konkrete AWS-Preise oder eine Wirtschaftlichkeitsprognose werden erst mit der tatsächlichen Architektur und aktuellen Preisgrundlagen ermittelt.
-
-### 16.12 Übergreifende Leitlinien und Freigabekriterien
+### 16.11 Übergreifende Leitlinien und Freigabekriterien
 
 Für alle weiteren Phasen gelten die bisherigen Projektkonventionen: Produktivcode unter `src/crawler/`, Tests unter `src/tests/`, zentrale Pfadverwaltung in `ProjectPaths.py`, direkte Modulimports und ausführliche gemeinsame Testausgabe. Neue Komponenten und Datenformate werden in diesem Handbuch ergänzt; historische Daten und versionierte Strategien bleiben unverändert.
 
 Jeder Entwicklungsschritt soll eine klar abgegrenzte Implementierung, reproduzierbare Tests, dokumentierte Einschränkungen und einen prüfbaren Übergang zum nächsten Schritt enthalten. Technische Funktionalität, fachliche Datenqualität, tatsächliche Anbieterfreigabe und wirtschaftliche Bewertung sind getrennte Kriterien. Der erfolgreiche Test eines lokalen oder begrenzten Auftrags ist keine automatische Freigabe für vollständige Live-Abrufe.
 
-**Unmittelbar nächster Schritt:** C.3.11.4c – Dynamische Ergebnismengen und stabile Datensatzidentität. Danach C.3.11.4d, C.3.11.4e, C.3.11.5 und C.3.11.6 bearbeiten und die offenen Validierungs- und Freigabenachweise klären, bevor der vollständige Live-Betrieb in Betracht gezogen wird.
-
+**Vorgeschlagener nächster Schritt: D-03 – Stabile Datensatzidentität.** Die Reihenfolge ist eine Planungsempfehlung auf Basis der Abhängigkeiten. Diese Roadmap-Überarbeitung ändert weder Quellcode noch Freigaben, Strategien, historische Checkpoints oder Daten.
